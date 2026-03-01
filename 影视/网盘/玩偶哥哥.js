@@ -1839,35 +1839,44 @@ function isVideoFile(file) {
 }
 
 /**
- * 递归获取所有视频文件
+ * 递归获取所有视频文件（带错误收集）
  * @param {string} shareURL - 分享链接
  * @param {Array} files - 文件列表
- * @param {string} pdirFid - 父目录ID
+ * @param {Array} errors - 错误收集数组（可选）
  * @returns {Promise<Array>} 所有视频文件列表
  */
-async function getAllVideoFiles(shareURL, files, pdirFid) {
-  const videoFiles = [];
-
-  for (const file of files) {
-    if (file.file && isVideoFile(file)) {
-      // 是视频文件，直接添加
-      videoFiles.push(file);
-    } else if (file.dir) {
-      // 是目录，递归获取
-      try {
-        const subFileList = await OmniBox.getDriveFileList(shareURL, file.fid);
-        if (subFileList && subFileList.files && Array.isArray(subFileList.files)) {
-          const subVideoFiles = await getAllVideoFiles(shareURL, subFileList.files, file.fid);
-          videoFiles.push(...subVideoFiles);
-        }
-      } catch (error) {
-        OmniBox.log("warn", `获取子目录文件失败: ${error.message}`);
-        // 继续处理其他文件
-      }
-    }
+async function getAllVideoFiles(shareURL, files, errors = []) {
+  if (!files || !Array.isArray(files)) {
+    return [];
   }
 
-  return videoFiles;
+  const tasks = files.map(async (file) => {
+    if (file.file && isVideoFile(file)) {
+      return [file];
+    } else if (file.dir) {
+      try {
+        const subFileList = await OmniBox.getDriveFileList(shareURL, file.fid);
+        if (subFileList?.files && Array.isArray(subFileList.files)) {
+          return await getAllVideoFiles(shareURL, subFileList.files, errors);
+        }
+        return [];
+      } catch (error) {
+        const errorInfo = {
+          path: file.name || file.fid,
+          fid: file.fid,
+          message: error.message,
+          timestamp: new Date().toISOString()
+        };
+        errors.push(errorInfo);
+        OmniBox.log("warn", `获取子目录失败: ${JSON.stringify(errorInfo)}`);
+        return [];
+      }
+    }
+    return [];
+  });
+
+  const results = await Promise.all(tasks);
+  return results.flat();
 }
 
 /**
