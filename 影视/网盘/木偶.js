@@ -1524,7 +1524,7 @@ async function home(params) {
             const vodName = $item.find(".module-item-pic img").attr("alt") || $item.find(".module-item-title").attr("title") || $item.find(".module-item-title").text().trim();
 
             // 获取封面图片（优先 data-src，其次 src）
-            const vodPic = $item.find(".module-item-pic img").attr("data-src") || $item.find(".module-item-pic img").attr("src");
+            let vodPic = $item.find(".module-item-pic img").attr("data-src") || $item.find(".module-item-pic img").attr("src");
             if (vodPic && !vodPic.startsWith("http://") && !vodPic.startsWith("https://")) {
               vodPic = removeTrailingSlash(WEB_SITE) + vodPic;
             }
@@ -1663,7 +1663,7 @@ async function category(params) {
       const $item = $(e);
       const href = $item.find(".module-item-pic a").attr("href");
       const vodName = $item.find(".module-item-pic img").attr("alt");
-      const vodPic = $item.find(".module-item-pic img").attr("data-src");
+      let vodPic = $item.find(".module-item-pic img").attr("data-src");
       if (vodPic && !vodPic.startsWith("http://") && !vodPic.startsWith("https://")) {
         vodPic = removeTrailingSlash(WEB_SITE) + vodPic;
       }
@@ -1751,7 +1751,7 @@ async function detail(params) {
 
     // 获取基本信息
     const vodName = $(".page-title")[0]?.children?.[0]?.data || "";
-    const vodPic = $($(".mobile-play")).find(".lazyload")[0]?.attribs?.["data-src"] || "";
+    let vodPic = $($(".mobile-play")).find(".lazyload")[0]?.attribs?.["data-src"] || "";
     if (vodPic && !vodPic.startsWith("http://") && !vodPic.startsWith("https://")) {
       vodPic = removeTrailingSlash(WEB_SITE) + vodPic;
     }
@@ -1848,7 +1848,7 @@ async function detail(params) {
 
         // 确定播放源列表（线路） 
         let sourceNames = [displayName]; // 默认使用网盘名称
-        if (driveInfo.driveType === "quark" || driveInfo.driveType === "uc") {
+        if (driveInfo.driveType === "quark") {
           // 夸克和UC网盘支持多线路
           sourceNames = ["本地代理", "服务端代理", "直连"];
           OmniBox.log("info", `${displayName}支持多线路: ${sourceNames.join(", ")}`);
@@ -2018,7 +2018,7 @@ async function search(params) {
         total: 0,
       };
     }
-
+ 
     // 解析 HTML
     const $ = cheerio.load(response.body);
     const videos = [];
@@ -2032,7 +2032,7 @@ async function search(params) {
       if (videoSerial && videoSerial.attribs) {
         const vodId = videoSerial.attribs.href || "";
         const vodName = videoSerial.attribs.title || "";
-        const vodPic = vodPicImg?.attribs?.["data-src"] || "";
+        let vodPic = vodPicImg?.attribs?.["data-src"] || "";
         if (vodPic && !vodPic.startsWith("http://") && !vodPic.startsWith("https://")) {
           vodPic = removeTrailingSlash(WEB_SITE) + vodPic;
         }
