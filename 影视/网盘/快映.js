@@ -601,7 +601,8 @@ async function detail(params) {
 
         // 刮削处理
         let scrapingSuccess = false;
-        const sourceId = `spider_source_${await OmniBox.getSourceId()}_${shareURL}`;
+        // 以视频ID作为刮削资源ID，保证同一条目下刮削结果稳定复用
+        const sourceId = `spider_source_${await OmniBox.getSourceId()}_${videoId}`;
 
         try {
           OmniBox.log("info", `开始执行刮削处理,资源名: ${vodName}, 视频文件数: ${allVideoFiles.length}`);
@@ -956,6 +957,7 @@ async function play(params) {
   try {
     const flag = params.flag || "";
     const playId = params.playId || "";
+    const source = params.source || "";
 
     OmniBox.log("info", `获取播放地址: flag=${flag}, playId=${playId}`);
 
@@ -984,8 +986,19 @@ async function play(params) {
     let episodeName = params.episodeName || "";
 
     try {
-      const sourceId = `spider_source_${await OmniBox.getSourceId()}_${shareURL}`;
-      const metadata = await OmniBox.getScrapeMetadata(sourceId);
+      // 优先使用视频ID维度读取刮削元数据，与 detail 阶段保持一致
+      const sourceIdByVod = params.vodId
+        ? `spider_source_${await OmniBox.getSourceId()}_${params.vodId}`
+        : "";
+      const sourceIdByShare = `spider_source_${await OmniBox.getSourceId()}_${shareURL}`;
+
+      let metadata = null;
+      if (sourceIdByVod) {
+        metadata = await OmniBox.getScrapeMetadata(sourceIdByVod);
+      }
+      if (!metadata || (!metadata.scrapeData && !metadata.videoMappings)) {
+        metadata = await OmniBox.getScrapeMetadata(sourceIdByShare);
+      }
 
       if (metadata && metadata.scrapeData && metadata.videoMappings) {
         const formattedFileId = fileId ? `${shareURL}|${fileId}` : "";
@@ -1041,7 +1054,7 @@ async function play(params) {
     // ==================== 弹幕匹配结束 ====================
 
     // 从flag中提取线路类型
-    let routeType = "直连";
+    let routeType = source === "web" ? "服务端代理" : "直连";
     if (flag && flag.includes("-")) {
       const parts = flag.split("-");
       routeType = parts[parts.length - 1];
