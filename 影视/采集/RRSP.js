@@ -1,9 +1,16 @@
+// @name RRSP
+// @author 
+// @description 刮削：支持，弹幕：支持，嗅探：支持
+// @dependencies: axios
+// @version 1.0.0
+// @downloadURL https://gh-proxy.org/https://github.com/Silent1566/OmniBox-Spider/raw/refs/heads/main/影视/采集/RRSP.js
+
+
 /**
  * ============================================================================
  * RRSP资源 - OmniBox 爬虫脚本 (增强日志调试版)
  * ============================================================================
  */
-// @version 1.0.1
 const axios = require("axios");
 const https = require("https");
 const OmniBox = require("omnibox_sdk");
@@ -52,6 +59,30 @@ const fixPicUrl = (url) => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
     return url.startsWith('/') ? `${host}${url}` : `${host}/${url}`;
+};
+
+const proxyImageDomains = new Set([
+    'img1.doubanio.com',
+    'img2.doubanio.com',
+    'img3.doubanio.com'
+]);
+
+const processImageUrl = (imageUrl, baseURL = '') => {
+    if (!imageUrl) return '';
+    const url = fixPicUrl(imageUrl);
+    if (!baseURL || !url.startsWith('http')) return url;
+
+    try {
+        const urlObj = new URL(url);
+        if (!proxyImageDomains.has(urlObj.hostname)) return url;
+        const referer = `${urlObj.protocol}//${urlObj.host}`;
+        const urlWithHeaders = `${url}@Referer=${referer}`;
+        const encodedUrl = encodeURIComponent(urlWithHeaders);
+        return `${baseURL}/api/proxy/image?url=${encodedUrl}`;
+    } catch (error) {
+        logError("处理图片 URL 失败", error);
+        return url;
+    }
 };
 
 // ========== 弹幕工具函数 ==========
@@ -256,7 +287,7 @@ const parsePlaySources = (fromStr, urlStr, vodName = '', videoId = '') => {
     return playSources;
 };
 
-const arr2vods = (arr) => {
+const arr2vods = (arr, baseURL = '') => {
     const videos = [];
     if (!arr) return videos;
     for (const i of arr) {
@@ -269,7 +300,7 @@ const arr2vods = (arr) => {
         videos.push({
             vod_id: i.vod_id,
             vod_name: i.vod_name,
-            vod_pic: i.vod_pic,
+            vod_pic: processImageUrl(i.vod_pic, baseURL),
             vod_remarks: remarks,
             vod_year: null
         });
@@ -279,8 +310,24 @@ const arr2vods = (arr) => {
 
 // ========== 接口实现 ==========
 
-async function home(params) {
+async function home(params, context) {
     logInfo("进入首页");
+    const baseURL = context?.baseURL || '';
+    let list = [];
+    try {
+        const res = await axiosInstance.post(`${host}/api.php/main_program/moviesAll/`, {
+            type: '0',
+            sort: 'vod_time',
+            page: 1,
+            limit: '100'
+        }, { headers: headers });
+
+        logInfo("首页接口返回原始数据", res.data);
+        list = arr2vods(res.data?.data?.list || [], baseURL);
+    } catch (e) {
+        logError("首页请求失败", e);
+    }
+
     return {
         class: [
             { 'type_id': '1', 'type_name': '电影' },
@@ -290,13 +337,14 @@ async function home(params) {
             { 'type_id': '4', 'type_name': '纪录片' },
             { 'type_id': '6', 'type_name': '短剧' }
         ],
-        list: []
+        list
     };
 }
 
-async function category(params) {
+async function category(params, context) {
     const { categoryId, page } = params;
     const pg = parseInt(page) || 1;
+    const baseURL = context?.baseURL || '';
     logInfo(`请求分类: ${categoryId}, 页码: ${pg}`);
     try {
         const res = await axiosInstance.post(`${host}/api.php/main_program/moviesAll/`, {
@@ -309,7 +357,7 @@ async function category(params) {
         logInfo("分类接口返回原始数据", res.data);
 
         const r = {
-            list: arr2vods(res.data.data.list),
+            list: arr2vods(res.data.data.list, baseURL),
             page: res.data.data.page || pg,
             pagecount: res.data.data.pagecount || 100
         };
@@ -323,8 +371,9 @@ async function category(params) {
     }
 }
 
-async function detail(params) {
+async function detail(params, context) {
     const videoId = params.videoId;
+    const baseURL = context?.baseURL || '';
     logInfo(`请求详情 ID: ${videoId}`);
     try {
         const res = await axiosInstance.post(`${host}/api.php/player/details/`, { id: videoId }, { headers: headers });
@@ -410,7 +459,7 @@ async function detail(params) {
             list: [{
                 vod_id: videoIdForScrape,
                 vod_name: scrapeData?.title || data.vod_name,
-                vod_pic: scrapeData?.posterPath ? `https://image.tmdb.org/t/p/w500${scrapeData.posterPath}` : fixPicUrl(data.vod_pic),
+                vod_pic: processImageUrl(scrapeData?.posterPath ? `https://image.tmdb.org/t/p/w500${scrapeData.posterPath}` : fixPicUrl(data.vod_pic), baseURL),
                 vod_content: scrapeData?.overview || data.vod_content,
                 vod_play_sources: normalizedPlaySources, // 关键：荐片架构必须返回此数组
                 vod_year: scrapeData?.releaseDate ? String(scrapeData.releaseDate).substring(0, 4) : data.vod_year,
@@ -426,9 +475,10 @@ async function detail(params) {
     }
 }
 
-async function search(params) {
+async function search(params, context) {
     const wd = params.keyword || params.wd || "";
     const pg = parseInt(params.page) || 1;
+    const baseURL = context?.baseURL || '';
     logInfo(`搜索关键词: ${wd}, 页码: ${pg}`);
     try {
         const res = await axiosInstance.post(`${host}/api.php/search/syntheticalSearch/`, {
@@ -438,7 +488,7 @@ async function search(params) {
         }, { headers: headers });
 
         const data = res.data.data;
-        const videos = [...arr2vods(data.chasingFanCorrelation), ...arr2vods(data.moviesCorrelation)];
+        const videos = [...arr2vods(data.chasingFanCorrelation, baseURL), ...arr2vods(data.moviesCorrelation, baseURL)];
 
         return {
             list: videos,
