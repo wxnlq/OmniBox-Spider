@@ -36,7 +36,7 @@ const DRIVE_ORDER = (process.env.DRIVE_ORDER || "baidu;tianyi;quark;uc;115;xunle
 // 详情链路缓存时间（秒），默认 12 小时
 const MUOU_CACHE_EX_SECONDS = Number(process.env.MUOU_CACHE_EX_SECONDS || 43200);
 // 是否异步刮削，默认 true。仅当明确配置为 false 时才走同步刮削。
-const ASYNC_SCRAPING = String(process.env.ASYNC_SCRAPING || "true").toLowerCase() !== "false";
+const ASYNC_SCRAPING = String(process.env.ASYNC_SCRAPING || "false").toLowerCase() !== "false";
 // ==================== 配置区域结束 ====================
 
 /**
