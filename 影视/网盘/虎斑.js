@@ -2,7 +2,7 @@
 // @author 
 // @description 刮削：支持，弹幕：支持，嗅探：支持
 // @dependencies: axios, cheerio
-// @version 1.0.5
+// @version 1.0.6
 // @downloadURL https://gh-proxy.org/https://github.com/Silent1566/OmniBox-Spider/raw/refs/heads/main/影视/网盘/虎斑.js
 
 // 引入 OmniBox SDK
@@ -1165,6 +1165,9 @@ async function detail(params, context) {
 
           const normalizedOriginalEpisodeName = normalizeEpisodeName(file.file_name || fileName);
           const playMeta = encodePlayMeta({
+            sid: videoId,
+            fid: fileId ? `${shareURL}|${fileId}` : "",
+            v: vodName || "",
             t: vodName,
             e: normalizedOriginalEpisodeName,
           });
@@ -1378,9 +1381,25 @@ async function play(params, context) {
       throw new Error("播放参数格式错误,应为:分享链接|文件ID");
     }
 
-    const shareURL = idParts[0] || "";
-    const fileId = idParts[1] || "";
-    const videoId = idParts[2] || "";
+    let playMeta = {};
+    let coreParts = [...idParts];
+    if (coreParts.length >= 3) {
+      const possibleMeta = coreParts[coreParts.length - 1] || "";
+      try {
+        playMeta = decodePlayMeta(possibleMeta);
+        if (playMeta && typeof playMeta === "object" && (playMeta.v || playMeta.e || playMeta.fid || playMeta.sid || playMeta.t)) {
+          coreParts = coreParts.slice(0, -1);
+        } else {
+          playMeta = {};
+        }
+      } catch (_) {
+        playMeta = {};
+      }
+    }
+
+    const shareURL = coreParts[0] || "";
+    const fileId = coreParts[1] || "";
+    const videoId = playMeta.sid || coreParts[2] || "";
 
     if (!shareURL || !fileId) {
       throw new Error("分享链接或文件ID不能为空");
@@ -1399,7 +1418,7 @@ async function play(params, context) {
         scrapeTitle: "",
         scrapePic: "",
         episodeNumber: null,
-        episodeName: params.episodeName || "",
+        episodeName: params.episodeName || playMeta.e || "",
       };
 
       if (!videoId) return result;
