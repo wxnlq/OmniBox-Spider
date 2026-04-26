@@ -10,7 +10,8 @@ const axios = require("axios");
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");
 
-const BASE = "https://pan.dyuzi.com";
+// 站点基地址（旧域 pan.dyuzi.com 已迁移/跳转到 ppan.dyuzi.com）
+const BASE = "https://ppan.dyuzi.com";
 const API = `${BASE}/api/frontend`;
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
 

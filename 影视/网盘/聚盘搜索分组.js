@@ -11,8 +11,8 @@ const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");
 
 // ==================== 配置区域开始 ====================
-// 站点基地址
-const BASE = "https://pan.dyuzi.com";
+// 站点基地址（旧域 pan.dyuzi.com 已迁移/跳转到 ppan.dyuzi.com）
+const BASE = "https://ppan.dyuzi.com";
 // 站点前端 API 根地址
 const API = `${BASE}/api/frontend`;
 // 默认请求 User-Agent
