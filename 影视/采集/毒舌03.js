@@ -2,7 +2,7 @@
 // @author 梦
 // @description 影视站：https://www.dushe03.com/ ，支持首页、分类、详情、搜索与播放
 // @dependencies cheerio
-// @version 1.0.7
+// @version 1.0.8
 // @downloadURL https://gh-proxy.org/https://github.com/Silent1566/OmniBox-Spider/raw/refs/heads/main/影视/采集/毒舌03.js
 
 const OmniBox = require("omnibox_sdk");
@@ -495,6 +495,35 @@ async function resolvePlayPage(playPageUrl, referer) {
   return { url: "", type: "" };
 }
 
+async function trySniffVideo(sniffUrl, headers = {}) {
+  if (!sniffUrl || typeof OmniBox.sniffVideo !== "function") return null;
+  try {
+    await OmniBox.log("info", `[毒舌03][play] sniffVideo start url=${sniffUrl} headers=${JSON.stringify(headers)}`);
+    const sniffed = await OmniBox.sniffVideo(sniffUrl, headers);
+    await OmniBox.log("info", `[毒舌03][play] sniffVideo result=${JSON.stringify(sniffed || null)}`);
+    if (sniffed?.url) {
+      return {
+        parse: 0,
+        url: sniffed.url,
+        urls: [{ name: "嗅探线路", url: sniffed.url }],
+        header: sniffed.header || headers,
+      };
+    }
+  } catch (e) {
+    await OmniBox.log("warn", `[毒舌03][play] sniffVideo failed: ${e.message || e}`);
+  }
+  return null;
+}
+
+function buildAppSniffFallback(sniffUrl, headers = {}) {
+  return {
+    parse: 1,
+    url: sniffUrl,
+    urls: [{ name: "嗅探线路", url: sniffUrl }],
+    header: headers,
+  };
+}
+
 function buildShowUrl(tid, ext = {}) {
   const type = encodeSegment(ext.type || "");
   const area = encodeSegment(ext.area || "");
@@ -626,42 +655,57 @@ async function play(params = {}) {
       return { parse: 0, url, urls: [{ name: "播放", url }], header: {} };
     }
 
+    const absolutePlayId = absUrl(playId);
+    const sniffHeaders = { "User-Agent": UA, Referer: absolutePlayId || `${BASE_URL}/`, Origin: BASE_URL };
     const cacheKey = `dushe03:play:${playId}`;
     const resolved = await getCachedText(cacheKey, PLAY_CACHE_TTL, async () => {
-      const absolutePlayId = absUrl(playId);
       if (/\/play\//.test(absolutePlayId)) {
         const source = await resolvePlayPage(absolutePlayId, `${BASE_URL}/`);
-        return JSON.stringify(source || {});
+        return JSON.stringify({ ...source, pageUrl: absolutePlayId });
       }
       if (/\/detail\//.test(absolutePlayId)) {
         const detailHtml = await requestText(absolutePlayId);
         const vod = parseDetail(detailHtml, absolutePlayId);
         const first = vod?.vod_play_sources?.[0]?.episodes?.[0]?.playId || "";
         if (first && first !== absolutePlayId) {
-          if (/\.(m3u8|mp4)(\?|#|$)/i.test(first)) return JSON.stringify({ url: resolvePlayUrl(first), type: "" });
-          if (/\/play\//.test(first)) return JSON.stringify(await resolvePlayPage(first, absolutePlayId));
-          return JSON.stringify({ url: first, type: "" });
+          if (/\.(m3u8|mp4)(\?|#|$)/i.test(first)) return JSON.stringify({ url: resolvePlayUrl(first), type: "", pageUrl: absolutePlayId });
+          if (/\/play\//.test(first)) {
+            const source = await resolvePlayPage(first, absolutePlayId);
+            return JSON.stringify({ ...source, pageUrl: absUrl(first) });
+          }
+          return JSON.stringify({ url: first, type: "", pageUrl: absolutePlayId });
         }
       }
-      return JSON.stringify({ url: "", type: "" });
+      return JSON.stringify({ url: "", type: "", pageUrl: absolutePlayId });
     });
 
     const parsed = (() => {
       try {
         return JSON.parse(String(resolved || "{}"));
       } catch (_) {
-        return { url: String(resolved || "") };
+        return { url: String(resolved || ""), pageUrl: absolutePlayId };
       }
     })();
+
     if (parsed?.url) {
       const url = resolvePlayUrl(parsed.url);
-      await OmniBox.log("info", `[毒舌03][play] parse=0 type=${parsed.type || "unknown"} url=${url}`);
-      return { parse: 0, url, urls: [{ name: "播放", url }], header: {} };
+      const pageUrl = absUrl(parsed.pageUrl || absolutePlayId);
+      const directHeaders = /\.(m3u8|mp4)(\?|#|$)/i.test(url) ? { Referer: pageUrl || `${BASE_URL}/`, Origin: BASE_URL, "User-Agent": UA } : {};
+      await OmniBox.log("info", `[毒舌03][play] resolved type=${parsed.type || "unknown"} url=${url} pageUrl=${pageUrl}`);
+      if (/\.(m3u8|mp4)(\?|#|$)/i.test(url)) {
+        return { parse: 0, url, urls: [{ name: "播放", url }], header: directHeaders };
+      }
+      const sniffResult = await trySniffVideo(url, { ...sniffHeaders, Referer: pageUrl || url, Origin: BASE_URL });
+      if (sniffResult) return sniffResult;
+      await OmniBox.log("warn", `[毒舌03][play] sdk sniff failed, fallback parse=1 url=${url}`);
+      return buildAppSniffFallback(url, { ...sniffHeaders, Referer: pageUrl || url, Origin: BASE_URL });
     }
 
-    const fallback = absUrl(playId);
-    await OmniBox.log("warn", `[毒舌03][play] fallback parse=1 url=${fallback}`);
-    return { parse: 1, url: fallback, urls: [{ name: "播放", url: fallback }], header: {} };
+    const sniffResult = await trySniffVideo(absolutePlayId, sniffHeaders);
+    if (sniffResult) return sniffResult;
+
+    await OmniBox.log("warn", `[毒舌03][play] final fallback parse=1 url=${absolutePlayId}`);
+    return buildAppSniffFallback(absolutePlayId, sniffHeaders);
   } catch (e) {
     await OmniBox.log("error", `[毒舌03][play] failed: ${e.message || e}`);
     return { parse: 0, url: "", urls: [], header: {} };
