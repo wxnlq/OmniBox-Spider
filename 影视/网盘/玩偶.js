@@ -2,7 +2,7 @@
 // @author
 // @description 刮削：支持，弹幕：支持，播放记录：支持
 // @dependencies: axios, cheerio
-// @version 1.0.3
+// @version 1.2.0
 // @downloadURL https://gh-proxy.org/https://github.com/Silent1566/OmniBox-Spider/raw/refs/heads/main/影视/网盘/玩偶.js
 
 // 引入 OmniBox SDK
@@ -44,6 +44,24 @@ const DRIVE_ORDER = (process.env.DRIVE_ORDER || "baidu;tianyi;quark;uc;115;xunle
 // 详情链路缓存时间（秒），默认 12 小时
 const WOGG_CACHE_EX_SECONDS = Number(process.env.WOGG_CACHE_EX_SECONDS || 43200);
 const WOGG_VERBOSE_DETAIL = String(process.env.WOGG_VERBOSE_DETAIL || "0") === "1";
+// ==================== CF 盾绕过配置（FlareSolverr）====================
+// 项目地址：https://github.com/FlareSolverr/FlareSolverr
+// 优先读取站点专用变量，其次回退通用 FLARESOLVERR_URL；仅在有值时才启用 CF 绕过逻辑。
+const WOOG_FLARESOLVERR_URL = process.env.WOOG_FLARESOLVERR_URL || process.env.FLARESOLVERR_URL || "";
+const WOOG_FLARESOLVERR_SESSION = process.env.WOOG_FLARESOLVERR_SESSION || "wogg";
+const WOOG_FLARESOLVERR_TIMEOUT_MS = parseInt(process.env.WOOG_FLARESOLVERR_TIMEOUT_MS || "45000", 10) || 45000;
+// 手动指定 cf_clearance cookie（设置后跳过自动获取）
+const WOOG_CF_COOKIE = process.env.WOOG_CF_COOKIE || "";
+// 是否启用自动 CF 绕过（设为 0 可关闭）
+const WOOG_CF_AUTO = process.env.WOOG_CF_AUTO !== "0";
+// CF cookie 缓存相关
+const WOOG_CF_CACHE_KEY = process.env.WOOG_CF_CACHE_KEY || "wogg:cf_clearance";
+const WOOG_CF_MAX_AGE_SECONDS = parseInt(process.env.WOOG_CF_MAX_AGE_SECONDS || "21600", 10) || 21600;
+
+// 域名会话缓存（复用 FlareSolverr 的完整请求头 + cookie 绕过同一域名下其他 URL），默认 1800 秒
+const WOOG_CF_SESSION_CACHE_TTL = parseInt(process.env.WOOG_CF_SESSION_CACHE_TTL || "1800", 10) || 1800;
+const WOOG_CF_SESSION_CACHE_KEY_PREFIX = (process.env.WOOG_CF_SESSION_CACHE_KEY_PREFIX || "wogg:session:").trim();
+// ==================== CF 盾绕过配置结束 ====================
 // ==================== 配置区域结束 ====================
 
 if (WEB_SITES.length === 0) {
@@ -262,10 +280,17 @@ async function collectDriveTypeCountMap(panUrls = []) {
 async function httpRequest(url, options = {}) {
   const method = (options.method || "GET").toUpperCase();
 
+  // 携带已缓存的 CF cookie（首次请求时自动加载，重试时复用传入值）
+  const currentCookie = options._cfCookie || (options._cfChecked ? "" : await getCachedCfCookie().catch(() => ""));
+  const headers = {
+    ...(options.headers || {}),
+    ...(currentCookie ? { Cookie: currentCookie } : {}),
+  };
+
   const response = await axios({
     url,
     method,
-    headers: options.headers || {},
+    headers,
     data: options.body,
     timeout: options.timeout,
     httpsAgent: INSECURE_HTTPS_AGENT,
@@ -275,6 +300,25 @@ async function httpRequest(url, options = {}) {
   let body = response.data;
   if (typeof body !== "string") {
     body = body === undefined || body === null ? "" : JSON.stringify(body);
+  }
+
+  // 检测 CF 盾拦截 → 直接调 FlareSolverr 绕过
+  if (isBlockedHtml(body) && WOOG_FLARESOLVERR_URL) {
+    OmniBox.log("warn", `[cf] ${url} 被CF盾拦截，通过 FlareSolverr 绕过`);
+    try {
+      const result = await fetchCfClearanceWithFlareSolverr(url);
+      if (result && result.body) {
+        OmniBox.log("info", `[cf] FlareSolverr 已返回页面内容: ${url}, status=${result.statusCode}, body长度=${result.body.length}`);
+        return {
+          statusCode: result.statusCode,
+          body: result.body,
+          headers: result.headers || {},
+          _cfSource: "flaresolverr",
+        };
+      }
+    } catch (err) {
+      OmniBox.log("warn", `[cf] FlareSolverr 绕过失败: ${err.message}`);
+    }
   }
 
   return {
@@ -291,6 +335,143 @@ function isBlockedHtml(body = "") {
   const lower = body.toLowerCase();
   return lower.includes("just a moment") || lower.includes("cf-browser-verification") || lower.includes("captcha") || lower.includes("访问验证");
 }
+
+// ==================== CF 盾辅助函数 ====================
+
+function cookiesArrayToString(cookies = []) {
+  return (Array.isArray(cookies) ? cookies : [])
+    .map((item) => ({ name: String(item?.name || "").trim(), value: String(item?.value || "").trim() }))
+    .filter((item) => item.name && item.value)
+    .map((item) => `${item.name}=${item.value}`)
+    .join("; ");
+}
+
+async function getCachedCfCookie() {
+  if (WOOG_CF_COOKIE) return WOOG_CF_COOKIE;
+  try {
+    const cached = await OmniBox.getCache(WOOG_CF_CACHE_KEY);
+    return String(cached || "").trim();
+  } catch (error) {
+    OmniBox.log("warn", `[cf] 读取缓存失败: ${error.message}`);
+    return "";
+  }
+}
+
+async function setCachedCfCookie(cookie) {
+  const value = String(cookie || "").trim();
+  if (!value || WOOG_CF_COOKIE) return;
+  try {
+    await OmniBox.setCache(WOOG_CF_CACHE_KEY, value, WOOG_CF_MAX_AGE_SECONDS);
+  } catch (error) {
+    OmniBox.log("warn", `[cf] 写入缓存失败: ${error.message}`);
+  }
+}
+
+// ==================== 域名会话缓存辅助函数 ====================
+function extractDomain(url) {
+  try { return new URL(url).hostname; } catch { return ""; }
+}
+
+async function getCachedDomainContext(domain) {
+  if (!domain) return null;
+  try {
+    const key = WOOG_CF_SESSION_CACHE_KEY_PREFIX + domain;
+    return await OmniBox.getCache(key) || null;
+  } catch (error) {
+    OmniBox.log("warn", `[cf] 读取域名会话缓存失败: ${error.message}`);
+    return null;
+  }
+}
+
+async function setCachedDomainContext(domain, headers, ua, cookie) {
+  if (!domain) return;
+  try {
+    const key = WOOG_CF_SESSION_CACHE_KEY_PREFIX + domain;
+    const ctx = { headers: headers || {}, ua: String(ua || ""), cookie: String(cookie || "") };
+    await OmniBox.setCache(key, ctx, WOOG_CF_SESSION_CACHE_TTL);
+    OmniBox.log("info", `[cf] 已缓存域名会话: ${domain}, TTL=${WOOG_CF_SESSION_CACHE_TTL}s, ua=${(ctx.ua || "(无)").substring(0, 40)}, cookie长度=${ctx.cookie.length}`);
+  } catch (error) {
+    OmniBox.log("warn", `[cf] 写入域名会话缓存失败: ${error.message}`);
+  }
+}
+// ==================== 域名会话缓存辅助函数结束 ====================
+
+async function fetchCfClearanceWithFlareSolverr(targetUrl) {
+  const endpoint = String(WOOG_FLARESOLVERR_URL || "").trim();
+  if (!endpoint) {
+    throw new Error("未配置 FlareSolverr 地址");
+  }
+
+  const payload = {
+    cmd: "request.get",
+    url: targetUrl,
+    maxTimeout: WOOG_FLARESOLVERR_TIMEOUT_MS,
+  };
+  if (String(WOOG_FLARESOLVERR_SESSION || "").trim()) {
+    payload.session = String(WOOG_FLARESOLVERR_SESSION).trim();
+  }
+
+  const res = await axios.post(endpoint, payload, {
+    timeout: WOOG_FLARESOLVERR_TIMEOUT_MS + 5000,
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    },
+    validateStatus: () => true,
+  });
+
+  if (res.status !== 200 || !res.data || res.data.status !== "ok") {
+    throw new Error(`FlareSolverr HTTP ${res.status}`);
+  }
+
+  const solution = res.data.solution || {};
+  const cookies = Array.isArray(solution.cookies) ? solution.cookies : [];
+  const cookie = cookiesArrayToString(cookies);
+  const cf = cookies.find((item) => String(item?.name) === "cf_clearance");
+
+  if (!cf?.value) {
+    throw new Error(`FlareSolverr 未返回 cf_clearance，message=${String(res.data.message || "").trim() || "unknown"}`);
+  }
+
+  const ua = String(solution.userAgent || "").trim();
+  const cookiePreview = cookie.length > 80 ? cookie.substring(0, 80) + "..." : cookie;
+  const execTime = solution.startTimestamp
+    ? (new Date(solution.endTimestamp || Date.now()).getTime() - new Date(solution.startTimestamp).getTime()) + "ms"
+    : "N/A";
+  const flareBody = String(solution.response || "");
+  OmniBox.log("info", `[cf] FlareSolverr 返回结果: status=${res.data.status || "?"}, cookies=${cookies.length}, cookie预览=${cookiePreview}, ua=${ua}, body长度=${flareBody.length}, message=${String(res.data.message || "").trim() || "(空)"}, 执行耗时=${execTime}`);
+  return {
+    cookie,
+    body: flareBody,
+    statusCode: solution.status || 200,
+    headers: solution.headers || {},
+    ua,
+  };
+}
+
+async function ensureCfCookie(forceRefresh = false, targetUrl) {
+  if (WOOG_CF_COOKIE) return { cookie: WOOG_CF_COOKIE, flareResult: null };
+  if (!forceRefresh) {
+    const cached = await getCachedCfCookie();
+    if (cached) return { cookie: cached, flareResult: null };
+  }
+  if (!WOOG_CF_AUTO) return { cookie: "", flareResult: null };
+
+  OmniBox.log("info", `[cf] 开始通过 FlareSolverr 自动获取 cf_clearance`);
+  try {
+    const flareResult = await fetchCfClearanceWithFlareSolverr(targetUrl);
+    if (flareResult.cookie) {
+      await setCachedCfCookie(flareResult.cookie);
+      OmniBox.log("info", `[cf] 已自动获取 cf_clearance，长度=${flareResult.cookie.length}`);
+    }
+    return { cookie: flareResult.cookie, flareResult };
+  } catch (error) {
+    OmniBox.log("warn", `[cf] FlareSolverr 获取失败: ${error.message}`);
+    return { cookie: "", flareResult: null };
+  }
+}
+
+// ==================== CF 盾辅助函数结束 ====================
 
 /**
  * 带容灾的请求函数
