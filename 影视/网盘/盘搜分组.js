@@ -1,7 +1,7 @@
 // @name 盘搜分组
 // @author 
 // @description 刮削：支持，弹幕：支持，嗅探：支持，只支持tvbox接口
-// @version 1.2.14
+// @version 1.2.6
 // @downloadURL https://gh-proxy.org/https://github.com/Silent1566/OmniBox-Spider/raw/refs/heads/main/影视/网盘/盘搜分组.js
 
 /**
@@ -1779,7 +1779,7 @@ async function detail(params, context) {
             try {
                 const videoFilesForScraping = allVideoFiles.map((file) => {
                     const fileId = file.fid || file.file_id || "";
-                    const formattedFileId = fileId ? `${shareURL}|${fileId}` : fileId;
+                    const formattedFileId = fileId ? `${encodeURIComponent(shareURL)}|${fileId}` : fileId;
                     return {
                         ...file,
                         fid: formattedFileId,
@@ -1820,7 +1820,7 @@ async function detail(params, context) {
                 try {
                     const videoFilesForScraping = allVideoFiles.map((file) => {
                         const fileId = file.fid || file.file_id || "";
-                        const formattedFileId = fileId ? `${shareURL}|${fileId}` : fileId;
+                        const formattedFileId = fileId ? `${encodeURIComponent(shareURL)}|${fileId}` : fileId;
                         return {
                             ...file,
                             fid: formattedFileId,
@@ -1871,7 +1871,7 @@ async function detail(params, context) {
                 const fileId = file.fid || "";
                 const fileSize = file.size || file.file_size || 0;
 
-                const formattedFileId = fileId ? `${shareURL}|${fileId}` : "";
+                const formattedFileId = fileId ? `${encodeURIComponent(shareURL)}|${fileId}` : "";
 
                 let matchedMapping = null;
                 if (scrapeData && videoMappings && Array.isArray(videoMappings) && videoMappings.length > 0) {
@@ -1897,7 +1897,7 @@ async function detail(params, context) {
 
                 const episode = {
                     name: displayFileName,
-                    playId: fileId ? `${shareURL}|${fileId}` : "",
+                    playId: fileId ? `${encodeURIComponent(shareURL)}|${fileId}` : "",
                     size: fileSize > 0 ? fileSize : undefined,
                 };
 
@@ -2067,8 +2067,9 @@ async function play(params, context) {
         if (parts.length < 2) {
             throw new Error("播放参数格式错误,应为:分享链接|文件ID");
         }
-        const shareURL = parts[0] || "";
+        let shareURL = parts[0] || "";
         const fileId = parts[1] || "";
+        shareURL=decodeURIComponent(shareURL);
 
         if (!shareURL || !fileId) {
             throw new Error("分享链接或文件ID不能为空");
@@ -2082,7 +2083,7 @@ async function play(params, context) {
         try {
             const metadata = await OmniBox.getScrapeMetadata(shareURL);
             if (metadata && metadata.scrapeData && metadata.videoMappings) {
-                const formattedFileId = fileId ? `${shareURL}|${fileId}` : "";
+                const formattedFileId = fileId ? `${encodeURIComponent(shareURL)}|${fileId}` : "";
 
                 let matchedMapping = null;
                 for (const mapping of metadata.videoMappings) {

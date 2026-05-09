@@ -2,7 +2,7 @@
 // @push 1
 // @author lampon
 // @description 推送脚本
-// @version 1.0.4
+// @version 1.0.5
 // @downloadURL https://gh-proxy.org/https://github.com/Silent1566/OmniBox-Spider/raw/refs/heads/main/模板/JavaScript/推送脚本.js
 
 const OmniBox = require("omnibox_sdk");
@@ -237,7 +237,7 @@ async function detail(params) {
         const fileSize = file.size || file.file_size || 0;
 
         // 构建用于匹配映射关系的文件ID格式：{shareURL}|${fileId}
-        const formattedFileId = fileId ? `${shareURL}|${fileId}` : "";
+        const formattedFileId = fileId ? `${encodeURIComponent(shareURL)}|${fileId}` : "";
 
         // 查找匹配的视频映射关系
         let matchedMapping = null;
@@ -259,7 +259,7 @@ async function detail(params) {
         // 构建剧集对象
         const episode = {
           name: fileName,
-          playId: fileId ? `${shareURL}|${fileId}` : "",
+          playId: fileId ? `${encodeURIComponent(shareURL)}|${fileId}` : "",
           size: fileSize > 0 ? fileSize : undefined,
         };
 
@@ -442,8 +442,9 @@ async function play(params) {
     if (parts.length < 2) {
       throw new Error("播放参数格式错误，应为：分享链接|文件ID");
     }
-    const shareURL = parts[0] || "";
+    let shareURL = parts[0] || "";
     const fileId = parts[1] || "";
+    shareURL=decodeURIComponent(shareURL);
 
     if (!shareURL || !fileId) {
       throw new Error("分享链接或文件ID不能为空");
