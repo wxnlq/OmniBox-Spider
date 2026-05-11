@@ -1,20 +1,20 @@
 // @name 3Q影视
-// @author W.Q, @wujiwanmei, @lucky_TJQ, tcxp, @shortai
+// @author W.Q, @wujiwanmei, @lucky_TJQ, tcxp, @shortai, 梦
 // @description 刮削：支持，弹幕：支持，嗅探：支持
 // @dependencies: axios, crypto
-// @version 1.0.6
+// @version 1.0.7
 // @downloadURL https://gh-proxy.org/https://github.com/Silent1566/OmniBox-Spider/raw/refs/heads/main/影视/采集/3Q影视.js
 
 /**
  * ============================================================================
- * 3Q影视 (qqqys.com)
+ * 哔哔影视 (bbys.app)
  * 刮削：支持
  * 弹幕：支持
  * 嗅探：支持
  * 
  * 特色功能：
  * - WASM Protobuf 解码加密播放地址
- * - 支持多线路画质优先级排序
+ * - 支持站内蓝光线路 + 站外聚合线路
  * - 完整的筛选器配置（类型/地区/年份）
  * - 集成 TMDB 刮削元数据
  * - 自动匹配弹幕
@@ -31,14 +31,16 @@ const OmniBox = require("omnibox_sdk");
 
 // ========== 全局配置 ==========
 const config = {
-    host: 'https://qqqys.com',
+    host: 'https://bbys.app',
+    wasmUrl: 'https://bbys.app/assets/web_app_wasm_bg-DaFtKBCq.wasm',
+    wasmCacheFile: 'bbys.wasm',
     headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
         'Accept': 'application/json',
         'X-Client': '8f3d2a1c7b6e5d4c9a0b1f2e3d4c5b6a',
         'web-sign': 'f65f3a83d6d9ad6f',
         'accept-language': 'zh-CN,zh;q=0.9',
-        'referer': 'https://qqqys.com'
+        'referer': 'https://bbys.app/'
     }
 };
 
@@ -55,13 +57,29 @@ const _http = axios.create({
 // 播放请求头
 const PLAY_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
-    "Referer": "https://qqqys.com/",
-    "Origin": "https://qqqys.com"
+    "Referer": "https://bbys.app/",
+    "Origin": "https://bbys.app"
 };
 
 const isHttpUrl = (u) => u && (u.startsWith('http://') || u.startsWith('https://'));
 const needsParser = (u) => /(iqiyi\.com|v\.qq\.com|youku\.com|mgtv\.com|bilibili\.com)/.test(String(u || ""));
 const isDirectPlayable = (u) => /\.(m3u8|mp4|flv|avi|mkv|ts)(?:\?|#|$)/i.test(String(u || ""));
+const shouldAppendSourceCode = (code, name) => {
+    const sourceCode = String(code || "").trim();
+    const sourceName = String(name || "").trim();
+    if (!sourceCode) return false;
+    if (!sourceName) return true;
+    if (sourceCode.toLowerCase().startsWith("site")) return false;
+    return sourceCode.toLowerCase() !== sourceName.toLowerCase();
+};
+const buildLineDisplayName = (name, code) => {
+    const sourceName = String(name || "").trim() || String(code || "").trim() || "布布影视2";
+    const sourceCode = String(code || "").trim();
+    if (shouldAppendSourceCode(sourceCode, sourceName)) {
+        return `${sourceName} (${sourceCode})`;
+    }
+    return sourceName;
+};
 
 async function sniffPlayUrl(playUrl) {
     try {
@@ -83,11 +101,11 @@ async function sniffPlayUrl(playUrl) {
  */
 const logInfo = (message, data = null) => {
     const output = data ? `${message}: ${JSON.stringify(data)}` : message;
-    OmniBox.log("info", `[3Q影视] ${output}`);
+    OmniBox.log("info", `[哔哔影视] ${output}`);
 };
 
 const logError = (message, error) => {
-    OmniBox.log("error", `[3Q影视] ${message}: ${error.message || error}`);
+    OmniBox.log("error", `[哔哔影视] ${message}: ${error.message || error}`);
 };
 
 /**
@@ -309,7 +327,7 @@ const json2vods = (arr) => (arr || []).map(i => ({
 }));
 
 // ============================================================
-// WASM 解码模块 - 用于解密 qqqys.com 的加密播放地址
+// WASM 解码模块 - 用于解密 bbys.app 的加密播放地址
 // 该模块使用 Protobuf + WASM 技术解码加密的视频 URL
 // ============================================================
 
@@ -477,9 +495,9 @@ async function initWasm() {
         try {
             // 尝试多个可能的 WASM 文件路径
             const possiblePaths = [
-                path.join(__dirname, 'qqqys.wasm'),
-                '/www/wwwroot/vodspider/vod/routes/qqqys.wasm',
-                '/tmp/qqqys.wasm'
+                path.join(__dirname, config.wasmCacheFile),
+                '/www/wwwroot/vodspider/vod/routes/bbys.wasm',
+                '/tmp/bbys.wasm'
             ];
 
             let wasmBuf = null;
@@ -497,14 +515,14 @@ async function initWasm() {
             if (!wasmBuf) {
                 logInfo('本地未找到 WASM 文件，开始从远程下载...');
                 wasmBuf = await new Promise((resolve, reject) => {
-                    https.get('https://qqqys.com/assets/web_app_wasm_bg-DaFtKBCq.wasm', (res) => {
+                    https.get(config.wasmUrl, (res) => {
                         const chunks = [];
                         res.on('data', c => chunks.push(c));
                         res.on('end', () => {
                             const buf = Buffer.concat(chunks);
                             // 保存到本地缓存
                             try {
-                                fs.writeFileSync(path.join(__dirname, 'qqqys.wasm'), buf);
+                                fs.writeFileSync(path.join(__dirname, config.wasmCacheFile), buf);
                                 logInfo('WASM 文件已缓存到本地');
                             } catch (e) {
                                 logError('WASM 文件缓存失败', e);
@@ -634,8 +652,8 @@ async function postProtobuf(url, data, extraHeaders = {}) {
                 'Accept': 'application/x-protobuf',
                 'Content-Length': data.length,
                 'User-Agent': config.headers['User-Agent'],
-                'Referer': 'https://qqqys.com',
-                'Origin': 'https://qqqys.com',
+                'Referer': `${config.host}/`,
+                'Origin': config.host,
                 ...extraHeaders
             }
         }, (res) => {
@@ -1057,7 +1075,7 @@ const buildPlaySourcesFromLines = (lines, vodName, videoId = "") => {
         }).filter(e => e.playId);
 
         return {
-            name: line.lineName || '3Q影视',
+            name: line.lineName || '布布影视2',
             episodes
         };
     }).filter(source => source.episodes && source.episodes.length > 0);
@@ -1077,17 +1095,27 @@ async function home(params) {
         // 请求首页获取分类数据
         const res = await apiGet(`${config.host}/api.php/web/index/home`);
         const list = [];
-        // 提取分类列表
-        const categories = res.data.data.categories || [];
+        const homeData = res.data.data || {};
+
+        const categories = Array.isArray(homeData.categories) ? homeData.categories : [];
         const classList = categories.map(i => ({
             type_id: i.type_name,
             type_name: i.type_name
         }));
+
+        const recommendBuckets = [];
+        if (Array.isArray(homeData.recommend)) recommendBuckets.push(...homeData.recommend);
         categories.forEach(i => {
-            i.videos.forEach(k => {
-                k.vod_id = k.vod_id.toString();
-                list.push(k);
-            });
+            if (Array.isArray(i.videos)) recommendBuckets.push(...i.videos);
+        });
+
+        const seen = new Set();
+        recommendBuckets.forEach(k => {
+            const vodId = String(k.vod_id || "").trim();
+            if (!vodId || seen.has(vodId)) return;
+            seen.add(vodId);
+            k.vod_id = vodId;
+            list.push(k);
         });
 
         logInfo(`分类获取完成，共 ${classList.length} 个`);
@@ -1125,7 +1153,7 @@ async function category(params) {
     logInfo(`请求分类: ${categoryId}, 页码: ${pg}, 筛选: ${JSON.stringify(filters || {})}`);
 
     try {
-        const PAGE_SIZE = 50;
+        const PAGE_SIZE = 24;
 
         // 构建请求 URL
         let url = `${config.host}/api.php/web/filter/vod?type_name=${encodeURIComponent(categoryId)}&page=${pg}&limit=${PAGE_SIZE}`;
@@ -1188,7 +1216,7 @@ async function detail(params) {
         // 请求详情数据
         const res = await apiGet(`${config.host}/api.php/web/vod/get_detail?vod_id=${videoId}`);
         const data = res.data.data[0];
-        const vodplayer = res.data.vodplayer;
+        const vodplayer = Array.isArray(res.data.vodplayer) ? res.data.vodplayer : [];
 
         // 构建基本信息
         const vod = {
@@ -1210,48 +1238,93 @@ async function detail(params) {
         const rawShows = data.vod_play_from.split('$$$');
         const rawUrlsList = data.vod_play_url.split('$$$');
         const validLines = [];
+        const pushLine = (lineName, playUrls, order, sourceCode = "") => {
+            if (!playUrls) return;
+            validLines.push({ lineName, playUrls, order, sourceCode: String(sourceCode || "").trim() });
+        };
 
         rawShows.forEach((showCode, index) => {
             const playerInfo = vodplayer.find(p => p.from === showCode);
             if (!playerInfo) return;
 
-            let lineName = playerInfo.show;
-            if (showCode.toLowerCase() !== lineName.toLowerCase()) {
-                lineName = `${lineName} (${showCode})`;
-            }
+            const lineName = buildLineDisplayName(playerInfo.show, showCode);
 
-            // 解析播放地址
-            const urls = rawUrlsList[index].split('#').map(urlItem => {
+            const rawUrls = String(rawUrlsList[index] || "");
+            const urls = rawUrls.split('#').map(urlItem => {
                 if (urlItem.includes('$')) {
                     const [episode, url] = urlItem.split('$');
-                    // 格式：集数名$线路代码@解码状态@URL
                     return `${episode}$${showCode}@${playerInfo.decode_status}@${url}`;
                 }
                 return null;
             }).filter(Boolean);
 
             if (urls.length > 0) {
-                validLines.push({
-                    lineName,
-                    playUrls: urls.join('#'),
-                    score: calculateQualityScore(showCode, lineName)
-                });
+                const order = 1000 + (rawShows.length - 1 - index);
+                pushLine(lineName, urls.join('#'), order, showCode);
             }
         });
+
+        try {
+            const aggregateRes = await apiGet(`${config.host}/api.php/web/internal/search_aggregate?vod_id=${videoId}`);
+            const aggregateItems = Array.isArray(aggregateRes?.data?.data) ? aggregateRes.data.data : [];
+            aggregateItems.forEach((item, idx) => {
+                const rawPlayUrl = String(item?.vod_play_url || "").trim();
+                if (!rawPlayUrl) return;
+                const sourceKey = String(item?.site_key || item?.vod_play_from || `external_${idx}`).trim();
+                const decodeStatus = String(item?.decode_status ?? '').trim();
+                const sourceName = String(item?.site_name || item?.vod_play_from || sourceKey || `站外线路${idx + 1}`).trim();
+                const lineName = buildLineDisplayName(sourceName, sourceKey);
+                const urls = rawPlayUrl.split('#').map(urlItem => {
+                    if (!urlItem || !urlItem.includes('$')) return null;
+                    const [episode, url] = urlItem.split('$');
+                    if (!episode || !url) return null;
+                    return `${episode}$${sourceKey}@${decodeStatus}@${url}`;
+                }).filter(Boolean);
+                if (!urls.length) return;
+                const sortScore = Number(item?.sort);
+                const order = Number.isFinite(sortScore) ? sortScore : idx;
+                pushLine(lineName, urls.join('#'), order, sourceKey);
+            });
+        } catch (aggregateError) {
+            logInfo(`聚合线路获取失败: ${aggregateError.message}`);
+        }
 
         if (validLines.length === 0) {
             logError('没有可用的播放线路', new Error('validLines is empty'));
             return { list: [] };
         }
 
-        // 按画质评分排序
-        validLines.sort((a, b) => b.score - a.score);
+        // 指定蓝光线路固定前置，其余线路保持原有顺序
+        const priorityLineOrder = ["JD4K", "JD2K", "BBA", "YYNB", "NBY"];
+        const getPriorityRank = (line) => {
+            const code = String(line?.sourceCode || "").trim().toUpperCase();
+            const idx = priorityLineOrder.indexOf(code);
+            return idx >= 0 ? idx : priorityLineOrder.length;
+        };
+        validLines.sort((a, b) => {
+            const rankA = getPriorityRank(a);
+            const rankB = getPriorityRank(b);
+            if (rankA !== rankB) return rankA - rankB;
+            if (rankA < priorityLineOrder.length) return 0;
+            return (a.order || 0) - (b.order || 0);
+        });
 
-        logInfo(`找到 ${validLines.length} 条播放线路`);
+        const seenLineNames = new Set();
+        const dedupedLines = [];
+        validLines.forEach((line) => {
+            const key = `${line.lineName}:::${line.playUrls}`;
+            if (seenLineNames.has(key)) return;
+            seenLineNames.add(key);
+            dedupedLines.push(line);
+        });
+
+        logInfo(`找到 ${dedupedLines.length} 条播放线路`, {
+            lineOrder: dedupedLines.map((line) => line.lineName)
+        });
 
         // 转换为标准格式（按线路分组）
         const videoIdForScrape = String(videoId || "");
-        const playSources = buildPlaySourcesFromLines(validLines, vod.vod_name, videoIdForScrape);
+        const playSources = buildPlaySourcesFromLines(dedupedLines, vod.vod_name, videoIdForScrape);
 
         // ========== 刮削处理 ==========
         let scrapeData = null;
@@ -1275,6 +1348,10 @@ async function detail(params) {
 
         // 执行刮削
         if (scrapeCandidates.length > 0) {
+            logInfo("准备刮削候选", {
+                candidateCount: scrapeCandidates.length,
+                candidatePreview: scrapeCandidates.slice(0, 5).map((item) => `${item.file_id}=>${item.file_name}`)
+            });
             try {
                 // 先快速读取已有刮削缓存，避免阻塞详情页返回
                 const metadata = await withTimeout(OmniBox.getScrapeMetadata(videoIdForScrape), 300, "getScrapeMetadata(cache)");
@@ -1284,7 +1361,8 @@ async function detail(params) {
                 logInfo(`刮削缓存读取完成`, {
                     hasScrapeData: !!scrapeData,
                     mappingCount: videoMappings.length,
-                    scrapeType
+                    scrapeType,
+                    mappingPreview: videoMappings.slice(0, 5).map((m) => `${getMappingFileId(m) || "<empty>"}=>${m?.episodeName || m?.file_name || m?.name || ""}`)
                 });
             } catch (error) {
                 logInfo(`刮削缓存读取失败: ${error.message}`);
@@ -1305,7 +1383,8 @@ async function detail(params) {
                     logInfo("后台刮削元数据更新完成", {
                         hasScrapeData: !!metadata?.scrapeData,
                         mappingCount: (metadata?.videoMappings || []).length,
-                        scrapeType: metadata?.scrapeType || ""
+                        scrapeType: metadata?.scrapeType || "",
+                        mappingPreview: (metadata?.videoMappings || []).slice(0, 5).map((m) => `${getMappingFileId(m) || "<empty>"}=>${m?.episodeName || m?.file_name || m?.name || ""}`)
                     });
                 })
                 .catch((bgError) => {
@@ -1313,16 +1392,30 @@ async function detail(params) {
                 });
         }
 
+        let renameCount = 0;
+        let mappingHitCount = 0;
+        const mappingMissPreview = [];
+
         // 应用刮削结果到集数名称
         for (const source of playSources) {
             for (const ep of source.episodes || []) {
                 const mapping = findMappingByFid(videoMappings, ep._fid, ep._rawName || ep.name || "");
-                if (!mapping) continue;
+                if (!mapping) {
+                    if (mappingMissPreview.length < 5) {
+                        mappingMissPreview.push({
+                            fid: ep._fid,
+                            episodeName: ep._rawName || ep.name || "",
+                        });
+                    }
+                    continue;
+                }
 
+                mappingHitCount += 1;
                 const oldName = ep.name;
                 const newName = buildScrapedEpisodeName(scrapeData, mapping, oldName);
                 if (newName && newName !== oldName) {
                     ep.name = newName;
+                    renameCount += 1;
                     logInfo(`应用刮削后集数名: ${oldName} -> ${newName}`);
                 }
                 ep._seasonNumber = mapping.seasonNumber;
@@ -1344,6 +1437,14 @@ async function detail(params) {
                 });
             }
         }
+
+        logInfo("详情刮削改名统计", {
+            sourceCount: playSources.length,
+            mappingCount: videoMappings.length,
+            mappingHitCount,
+            renameCount,
+            mappingMissPreview,
+        });
 
         // 构建最终的播放源数据
         vod.vod_play_sources = playSources.map((source) => ({
@@ -1516,7 +1617,7 @@ async function play(params) {
                 logError('解码失败', new Error(`无法解码 ${play_from}: ${raw_url.substring(0, 40)}...`));
                 // 解码失败，返回空地址
                 return {
-                    urls: [{ name: "3Q影视", url: "" }],
+                    urls: [{ name: "哔哔影视", url: "" }],
                     parse: 0,
                     header: PLAY_HEADERS
                 };
@@ -1538,7 +1639,7 @@ async function play(params) {
 
         // 构建播放响应
         const playResponse = {
-            urls: [{ name: "3Q影视", url: finalUrl }],
+            urls: [{ name: "哔哔影视", url: finalUrl }],
             parse: parseFlag,
             header: playHeader
         };
@@ -1564,7 +1665,7 @@ async function play(params) {
     } catch (error) {
         logError("播放解析失败", error);
         return {
-            urls: [{ name: "3Q影视", url: "" }],
+            urls: [{ name: "哔哔影视", url: "" }],
             parse: 0,
             header: PLAY_HEADERS
         };
