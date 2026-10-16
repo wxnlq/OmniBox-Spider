@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # @name 小chu女
-# @version 1.0.0
+# @version 1.0.1
 
 import json
 import re
@@ -10,8 +10,8 @@ from bs4 import BeautifulSoup
 from spider_runner import OmniBox, run
 
 # 全局配置（原 init 内容移到这里）
-host = "https://eey.myacetwve.buzz"
-home_url = "https://eey.myacetwve.buzz/chu/"
+host = "https://ukqfm.myacetweay.buzz"
+home_url = "https://ukqfm.myacetweay.buzz/chu/"
 header = {
     'User-Agent': 'Mozilla/5.0 (Linux; Android 15; RMX3770) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36'
 }
