@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # @name 第七区
-# @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/第七区[瑟瑟].py
+// @version 0.0.1
 
 import ast
 import html

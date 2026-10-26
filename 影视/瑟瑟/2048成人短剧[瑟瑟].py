@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # @name 🦋 2048成人短剧
-# @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/2048成人短剧[瑟瑟].py
+// @version 0.0.1
 
 import json
 from urllib.parse import (
