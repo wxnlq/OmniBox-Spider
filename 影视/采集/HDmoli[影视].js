@@ -1,7 +1,7 @@
-// @name: HDmoli
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/HDmoli.js
-// @dependencies: cheerio
+// @name HDmoli
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/HDmoli.js
+// @dependencies cheerio
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

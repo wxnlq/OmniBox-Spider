@@ -1,9 +1,9 @@
-// @name: 河马短剧
-// @author:
-// @description:
-// @dependencies: axios, crypto-js
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/短剧/河马短剧.js
+// @name 河马短剧
+// @author
+// @description
+// @dependencies axios, crypto-js
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/短剧/河马短剧.js
 
 /**
  * ==========================================================================

@@ -1,9 +1,9 @@
-// @name: 耐视点播
-// @author: 梦
-// @description: 页面解析：https://nsvod.me，支持首页、分类、搜索、详情与播放页解析
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/耐视点播.js
-// @dependencies: cheerio
+// @name 耐视点播
+// @author 梦
+// @description 页面解析：https://nsvod.me，支持首页、分类、搜索、详情与播放页解析
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/耐视点播.js
+// @dependencies cheerio
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

@@ -1,9 +1,9 @@
-// @name: 推送脚本
+// @name 推送脚本
 // @push 1
-// @author: lampon
-// @description: 推送脚本
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/模板/JavaScript/推送脚本.js
+// @author lampon
+// @description 推送脚本
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/模板/JavaScript/推送脚本.js
 
 const OmniBox = require("omnibox_sdk");
 

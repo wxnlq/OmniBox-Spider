@@ -1,9 +1,9 @@
-// @name: 毒舌影视
-// @author: 梦
-// @description: 影视站：https://www.xnhrsb.com/ ，支持首页、分类、详情、搜索与播放
-// @dependencies: cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/毒舌影视.js
+// @name 毒舌影视
+// @author 梦
+// @description 影视站：https://www.xnhrsb.com/ ，支持首页、分类、详情、搜索与播放
+// @dependencies cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/毒舌影视.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

@@ -1,10 +1,10 @@
-// @name: DJ音乐[听] - OmniBox
-// @version: 1.0.0
-// @author: https://github.com/hjdhnx/drpy-node/blob/main/spider/js/DJ%E9%9F%B3%E4%B9%90%5B%E5%90%AC%5D.js
+// @name DJ音乐[听] - OmniBox
+// @version 1.0.0
+// @author https://github.com/hjdhnx/drpy-node/blob/main/spider/js/DJ%E9%9F%B3%E4%B9%90%5B%E5%90%AC%5D.js
 // @origin https://github.com/hjdhnx/drpy-node/blob/main/spider/js/DJ%E9%9F%B3%E4%B9%90%5B%E5%90%AC%5D.js
 // @push 0
-// @dependencies: cheerio
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/音乐/DJ音乐.js
+// @dependencies cheerio
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/音乐/DJ音乐.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

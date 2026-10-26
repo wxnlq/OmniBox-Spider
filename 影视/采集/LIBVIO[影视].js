@@ -1,9 +1,9 @@
-// @name: LIBVIO
-// @author: 梦
-// @description: 刮削：已接入，弹幕：已接入，播放记录：已接入，嗅探：不需要（直链优先，支持网盘线路展开）
-// @dependencies:
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/LIBVIO.js
+// @name LIBVIO
+// @author 梦
+// @description 刮削：已接入，弹幕：已接入，播放记录：已接入，嗅探：不需要（直链优先，支持网盘线路展开）
+// @dependencies
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/LIBVIO.js
 
 const http = require("http");
 const https = require("https");

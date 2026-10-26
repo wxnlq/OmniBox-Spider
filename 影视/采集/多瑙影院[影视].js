@@ -1,7 +1,7 @@
-// @name: 多瑙影院
-// @description: 页面解析：https://dnvod.org，支持首页、筛选分类、搜索、详情、多线路直连与嗅探兜底
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/多瑙影院.js
+// @name 多瑙影院
+// @description 页面解析：https://dnvod.org，支持首页、筛选分类、搜索、详情、多线路直连与嗅探兜底
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/多瑙影院.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

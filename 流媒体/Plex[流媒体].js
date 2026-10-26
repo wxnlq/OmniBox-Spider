@@ -1,10 +1,10 @@
-// @name: Plex
-// @author: Copilot
-// @description: 直连 Plex 接口，填好 host 即可使用。支持多服务器、多库、剧集/电影播放、合集、plex.tv 自动发现
-// @dependencies: axios
-// @version: 1.0.0
+// @name Plex
+// @author Copilot
+// @description 直连 Plex 接口，填好 host 即可使用。支持多服务器、多库、剧集/电影播放、合集、plex.tv 自动发现
+// @dependencies axios
+// @version 1.0.0
 // @indexs 影视
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/流媒体/Plex.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/流媒体/Plex.js
 
 /**
  * ============================================================================

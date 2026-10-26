@@ -1,9 +1,9 @@
-// @name: 枫叶4K
-// @author: 梦
-// @description: 影视站：支持首页、分类（VIP精选/类型筛选）、详情、搜索与播放，补齐刮削、弹幕与播放记录，基于 https://www.cd-zj.com
-// @dependencies: cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/枫叶4K.js
+// @name 枫叶4K
+// @author 梦
+// @description 影视站：支持首页、分类（VIP精选/类型筛选）、详情、搜索与播放，补齐刮削、弹幕与播放记录，基于 https://www.cd-zj.com
+// @dependencies cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/枫叶4K.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

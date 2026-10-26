@@ -1,8 +1,8 @@
-// @name: 影视库
-// @author: lampon
-// @description:
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/影视库/影视库.js
+// @name 影视库
+// @author lampon
+// @description
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/影视库/影视库.js
 
 
 /**

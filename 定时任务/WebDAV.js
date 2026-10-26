@@ -1,9 +1,9 @@
-// @name: WebDAV
-// @author: lampon
-// @description:
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/定时任务/WebDAV.js
-// @dependencies: crypto
+// @name WebDAV
+// @author lampon
+// @description
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/定时任务/WebDAV.js
+// @dependencies crypto
 
 /**
  * 定时任务：将 WebDAV 数据源中的视频写入本地影视库（media_library_items）

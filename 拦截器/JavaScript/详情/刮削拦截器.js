@@ -1,8 +1,8 @@
-// @name: 刮削拦截器
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/拦截器/JavaScript/详情/刮削拦截器.js
-// @author: OpenCode
-// @description: beforeDetail 做入参规范化，afterDetail 自动触发TMDB刮削并回填详情元数据
-// @version: 1.0.0
+// @name 刮削拦截器
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/拦截器/JavaScript/详情/刮削拦截器.js
+// @author OpenCode
+// @description beforeDetail 做入参规范化，afterDetail 自动触发TMDB刮削并回填详情元数据
+// @version 1.0.0
 // @filter-stages detail_before,detail_after
 // @filter-config-schema {"description":"beforeDetail 做详情入参规范化，afterDetail 对详情结果触发 TMDB 刮削并回填元数据","fields":[{"key":"forceRefresh","label":"强制刷新","type":"boolean","required":false,"placeholder":"忽略已有刮削结果重新刮削"},{"key":"normalizeVideoId","label":"规范化 videoId","type":"boolean","required":false,"placeholder":"默认开启"}]}
 

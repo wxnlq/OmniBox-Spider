@@ -1,9 +1,9 @@
-// @name: 茶杯狐
-// @author: 梦
-// @description: 影视站：支持首页、分类、详情、刮削、弹幕、播放记录与播放；搜索受站点人机验证影响，失败时安全降级
-// @dependencies: cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/茶杯狐.js
+// @name 茶杯狐
+// @author 梦
+// @description 影视站：支持首页、分类、详情、刮削、弹幕、播放记录与播放；搜索受站点人机验证影响，失败时安全降级
+// @dependencies cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/茶杯狐.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

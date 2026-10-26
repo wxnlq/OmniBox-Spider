@@ -1,9 +1,9 @@
-// @name: 玩偶聚合
-// @author: @lucky_TJQ
-// @description: 聚合玩偶、木偶、蜡笔、闪电、至臻、二小、虎斑、快映、欧哥、多多、蜗牛4K等网盘站点；支持刮削、弹幕、多线路、二级分类筛选、翻页、网盘排序
-// @dependencies: axios,cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/玩偶聚合.js
+// @name 玩偶聚合
+// @author @lucky_TJQ
+// @description 聚合玩偶、木偶、蜡笔、闪电、至臻、二小、虎斑、快映、欧哥、多多、蜗牛4K等网盘站点；支持刮削、弹幕、多线路、二级分类筛选、翻页、网盘排序
+// @dependencies axios,cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/玩偶聚合.js
 
 const OmniBox = require("omnibox_sdk");
 const cheerio = require("cheerio");

@@ -1,16 +1,16 @@
-// @name: 永乐视频
-// @author:
-// @description: 刮削：支持，弹幕：支持，嗅探：支持
-// @dependencies: axios, cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/永乐视频.js
+// @name 永乐视频
+// @author
+// @description 刮削：支持，弹幕：支持，嗅探：支持
+// @dependencies axios, cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/永乐视频.js
 
 /**
  * ============================================================================
  * 永乐视频 - OmniBox 爬虫脚本 (增强版)
  * ============================================================================
  */
-// @version: 1.0.0
+// @version 1.0.0
 const axios = require("axios");
 const cheerio = require("cheerio");
 const https = require("https");

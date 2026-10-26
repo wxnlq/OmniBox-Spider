@@ -1,9 +1,9 @@
-// @name: 影视大全
-// @author: 梦
-// @description: 影视站：https://www.iysdq.tv ，支持首页、分类、搜索、详情与播放解析
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/影视大全.js
-// @dependencies: cheerio
+// @name 影视大全
+// @author 梦
+// @description 影视站：https://www.iysdq.tv ，支持首页、分类、搜索、详情与播放解析
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/影视大全.js
+// @dependencies cheerio
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

@@ -1,9 +1,9 @@
-// @name: 片库
-// @author: OpenClaw Taizi
-// @description: 刮削：支持，弹幕：支持，嗅探：支持，CF盾绕过：支持，滑块验证：支持
-// @dependencies: axios, cheerio, crypto
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/片库.js
+// @name 片库
+// @author OpenClaw Taizi
+// @description 刮削：支持，弹幕：支持，嗅探：支持，CF盾绕过：支持，滑块验证：支持
+// @dependencies axios, cheerio, crypto
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/片库.js
 
 /**
  * ============================================================================

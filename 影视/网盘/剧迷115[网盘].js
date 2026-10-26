@@ -1,9 +1,9 @@
-// @name: 剧迷115
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/剧迷115[网盘].js
-// @author: 梦
-// @description: 影视站：gimy115.top，支持首页、分类、搜索、详情与网盘线路提取；支持刮削、弹幕、播放记录；Cookie 支持环境变量配置
-// @version: 1.0.0
-// @dependencies: cheerio
+// @name 剧迷115
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/剧迷115[网盘].js
+// @author 梦
+// @description 影视站：gimy115.top，支持首页、分类、搜索、详情与网盘线路提取；支持刮削、弹幕、播放记录；Cookie 支持环境变量配置
+// @version 1.0.0
+// @dependencies cheerio
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

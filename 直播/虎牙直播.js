@@ -1,9 +1,9 @@
-// @name: 虎牙直播
-// @author:
-// @description:
-// @dependencies: axios, crypto
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/直播/虎牙直播.js
+// @name 虎牙直播
+// @author
+// @description
+// @dependencies axios, crypto
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/直播/虎牙直播.js
 
 
 /**

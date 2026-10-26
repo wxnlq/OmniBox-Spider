@@ -1,10 +1,10 @@
-// @name: Jellyfin
-// @author: Copilot
-// @description: 直连 Jellyfin/Emby 接口，填好服务器地址、账号密码即可使用。支持多服务器、多库、剧集/电影播放
-// @dependencies: axios
-// @version: 1.0.0
+// @name Jellyfin
+// @author Copilot
+// @description 直连 Jellyfin/Emby 接口，填好服务器地址、账号密码即可使用。支持多服务器、多库、剧集/电影播放
+// @dependencies axios
+// @version 1.0.0
 // @indexs 影视
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/流媒体/Jellyfin.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/流媒体/Jellyfin.js
 
 /**
  * ============================================================================

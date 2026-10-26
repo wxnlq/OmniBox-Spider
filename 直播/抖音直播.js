@@ -1,9 +1,9 @@
-// @name: 抖音直播
-// @author:
-// @description:
-// @dependencies: axios, crypto
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/直播/抖音直播.js
+// @name 抖音直播
+// @author
+// @description
+// @dependencies axios, crypto
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/直播/抖音直播.js
 
 /**
  * ============================================================================

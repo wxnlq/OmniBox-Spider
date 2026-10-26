@@ -1,9 +1,9 @@
-// @name: 剧圈圈
-// @author: 梦
-// @description: 影视站：支持首页、分类、详情、搜索与播放
-// @dependencies: cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/剧圈圈.js
+// @name 剧圈圈
+// @author 梦
+// @description 影视站：支持首页、分类、详情、搜索与播放
+// @dependencies cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/剧圈圈.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

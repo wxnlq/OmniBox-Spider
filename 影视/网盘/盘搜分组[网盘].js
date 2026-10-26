@@ -1,9 +1,9 @@
-// @name: 盘搜分组
-// @author:
-// @description: 刮削：支持，弹幕：支持，嗅探：支持，只支持tvbox接口
-// @dependencies: crypto, axios
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/盘搜分组.js
+// @name 盘搜分组
+// @author
+// @description 刮削：支持，弹幕：支持，嗅探：支持，只支持tvbox接口
+// @dependencies crypto, axios
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/盘搜分组.js
 
 /**
 * OmniBox 网盘爬虫脚本 - 分组版本

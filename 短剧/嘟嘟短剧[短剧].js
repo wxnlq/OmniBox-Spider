@@ -1,8 +1,8 @@
-// @name: 嘟嘟短剧
-// @author: 梦
-// @description: API 短剧站：https://api-v2.cenguigui.cn，支持分类、搜索、详情与多清晰度播放
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/短剧/嘟嘟短剧.js
+// @name 嘟嘟短剧
+// @author 梦
+// @description API 短剧站：https://api-v2.cenguigui.cn，支持分类、搜索、详情与多清晰度播放
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/短剧/嘟嘟短剧.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

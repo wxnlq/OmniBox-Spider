@@ -1,8 +1,8 @@
-// @name: 柯南影视
-// @description: 接口解析：https://www.knvod.com，支持首页、分类、搜索、详情与播放解析
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/柯南影视.js
-// @dependencies: crypto-js
+// @name 柯南影视
+// @description 接口解析：https://www.knvod.com，支持首页、分类、搜索、详情与播放解析
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/柯南影视.js
+// @dependencies crypto-js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

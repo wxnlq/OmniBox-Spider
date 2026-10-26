@@ -1,9 +1,9 @@
-// @name: 四万影视
-// @author: 梦
-// @description: 站点接口源：直接走 40000.me 的 /api/maccms，支持分类、详情、搜索、播放
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/四万影视.js
-// @dependencies: axios
+// @name 四万影视
+// @author 梦
+// @description 站点接口源：直接走 40000.me 的 /api/maccms，支持分类、详情、搜索、播放
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/四万影视.js
+// @dependencies axios
 
 const axios = require("axios");
 const OmniBox = require("omnibox_sdk");

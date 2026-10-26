@@ -1,8 +1,8 @@
-// @name: 弹幕拦截器
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/拦截器/JavaScript/播放/弹幕拦截器.js
-// @author: OpenCode
-// @description: 在 afterPlay 阶段根据 TMDB 刮削结果或标题关键词自动匹配弹幕数据（参考木偶.js / 嗷呜动漫.js 弹幕匹配流程）
-// @version: 1.0.0
+// @name 弹幕拦截器
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/拦截器/JavaScript/播放/弹幕拦截器.js
+// @author OpenCode
+// @description 在 afterPlay 阶段根据 TMDB 刮削结果或标题关键词自动匹配弹幕数据（参考木偶.js / 嗷呜动漫.js 弹幕匹配流程）
+// @version 1.0.0
 // @filter-stages play_after
 // @filter-config-schema {"description":"在播放阶段读取已有刮削元数据或根据标题/集名匹配弹幕","fields":[{"key":"danmakuEnabled","label":"启用弹幕","type":"boolean","required":false}]}
 

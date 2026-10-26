@@ -1,9 +1,9 @@
-// @name: 新韩剧网
-// @author: Monica
-// @description: 刮削：支持，弹幕：支持，嗅探：支持
-// @dependencies: cheerio, crypto-js
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/新韩剧网.js
+// @name 新韩剧网
+// @author Monica
+// @description 刮削：支持，弹幕：支持，嗅探：支持
+// @dependencies cheerio, crypto-js
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/新韩剧网.js
 
 const OmniBox = require("omnibox_sdk");
 const cheerio = require("cheerio");

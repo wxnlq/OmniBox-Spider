@@ -1,8 +1,8 @@
-// @name: 星星短剧 ᵈᶻ[短]
-// @version: 1.0.0
+// @name 星星短剧 ᵈᶻ[短]
+// @version 1.0.0
 // @push 0
-// @dependencies: axios
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/短剧/星星短剧.js
+// @dependencies axios
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/短剧/星星短剧.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

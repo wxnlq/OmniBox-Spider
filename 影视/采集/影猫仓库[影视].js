@@ -1,10 +1,10 @@
-// @name: 影猫仓库
-// @author:
-// @description: 刮削：支持，弹幕：支持，嗅探：支持，并发：安全
-// @description: 03 + 开心 + 真狼 (并发解析)
-// @dependencies: axios, crypto, cheerio, http, https
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/影猫仓库.js
+// @name 影猫仓库
+// @author
+// @description 刮削：支持，弹幕：支持，嗅探：支持，并发：安全
+// @description 03 + 开心 + 真狼 (并发解析)
+// @dependencies axios, crypto, cheerio, http, https
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/影猫仓库.js
 
 const axios = require("axios");
 const cheerio = require("cheerio");

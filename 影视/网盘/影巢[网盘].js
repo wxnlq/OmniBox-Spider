@@ -1,9 +1,9 @@
-// @name: 影巢
-// @author: lampon
-// @description:
-// @dependencies: axios
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/影巢.js
+// @name 影巢
+// @author lampon
+// @description
+// @dependencies axios
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/影巢.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

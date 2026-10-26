@@ -1,9 +1,9 @@
-// @name: Gimy剧迷
-// @author: 梦
-// @description: 影视站：Gimy / gimy.now / gimyai.tw，支持首页、分类、详情、搜索与播放页嗅探
-// @dependencies: cheerio,@types/opencc-js
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/Gimy剧迷.js
+// @name Gimy剧迷
+// @author 梦
+// @description 影视站：Gimy / gimy.now / gimyai.tw，支持首页、分类、详情、搜索与播放页嗅探
+// @dependencies cheerio,@types/opencc-js
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/Gimy剧迷.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

@@ -1,6 +1,6 @@
-// @name: 采集站模板-自动解析视频type生成分类
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/模板/JavaScript/采集站模板.js
+// @name 采集站模板-自动解析视频type生成分类
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/模板/JavaScript/采集站模板.js
 /**
  * OmniBox 采集站直接爬虫脚本
  * 修改说明：

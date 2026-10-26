@@ -1,8 +1,8 @@
-// @name: 360影视
-// @author: 梦
-// @description: 360影视 OmniBox 源；解析接口通过全局环境变量 PARSE_APIS 配置，按顺序循环尝试
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/解析/movie360.js
+// @name 360影视
+// @author 梦
+// @description 360影视 OmniBox 源；解析接口通过全局环境变量 PARSE_APIS 配置，按顺序循环尝试
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/解析/movie360.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");
@@ -21,7 +21,7 @@ const SITE_PRIORITY = ["qq", "imgo", "qiyi", "youku", "leshi", "cntv", "douyin",
 // 全局解析接口环境变量名：支持换行 / 逗号 / 分号 / 竖线分隔多个地址。
 // 支持两种写法：
 // 1. 纯接口地址： https://jx.example.com/?url=
-// 2. 自定义名称： 摸鱼@http://zhuimi.moyu666666.top/moyu/zhuimi?token=xxx&url=
+// 2. 自定义名称： 摸鱼@http//zhuimi.moyu666666.top/moyu/zhuimi?token=xxx&url=
 const PARSE_API_ENV = "PARSE_APIS";
 
 // 默认解析源：当未配置 PARSE_APIS 时，按以下顺序补足并循环尝试。

@@ -1,9 +1,9 @@
-// @name: 七味分组
-// @author: https://github.com/hjdhnx/drpy-node/blob/main/spider/js/%E4%B8%83%E5%91%B3%5B%E4%BC%98%5D.js
-// @description: 刮削：支持，弹幕：支持，嗅探：支持，仅保留七味网盘线路的分组版本
-// @dependencies: axios, cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/七味分组.js
+// @name 七味分组
+// @author https://github.com/hjdhnx/drpy-node/blob/main/spider/js/%E4%B8%83%E5%91%B3%5B%E4%BC%98%5D.js
+// @description 刮削：支持，弹幕：支持，嗅探：支持，仅保留七味网盘线路的分组版本
+// @dependencies axios, cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/七味分组.js
 
 const axios = require("axios");
 const cheerio = require("cheerio");

@@ -1,16 +1,16 @@
 ﻿// @name Emby-妯℃澘浜?
-// @author:
+// @author
 <<<<<<< HEAD
-// @description: 鐩磋繛 Emby 鎺ュ彛锛孴VBox T4 缁撴瀯杈撳嚭锛堝埉鍓婏細涓嶆敮鎸侊紝寮瑰箷锛氫笉鏀寔锛屽梾鎺細涓嶆敮鎸侊級
-// @dependencies: axios
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/Emby/%E6%A8%A1%E6%9D%BF%E4%BA%8C.js
+// @description 鐩磋繛 Emby 鎺ュ彛锛孴VBox T4 缁撴瀯杈撳嚭锛堝埉鍓婏細涓嶆敮鎸侊紝寮瑰箷锛氫笉鏀寔锛屽梾鎺細涓嶆敮鎸侊級
+// @dependencies axios
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/Emby/%E6%A8%A1%E6%9D%BF%E4%BA%8C.js
 // @indexs 0
 =======
-// @description: 直连 Emby 接口，TVBox T4 结构输出（刮削：不支持，弹幕：不支持，嗅探：不支持）
-// @dependencies: axios
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/Emby/模板二.js
+// @description 直连 Emby 接口，TVBox T4 结构输出（刮削：不支持，弹幕：不支持，嗅探：不支持）
+// @dependencies axios
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/Emby/模板二.js
 <<<<<<< HEAD
 >>>>>>> parent of 03e8814 (重写注释)
 =======

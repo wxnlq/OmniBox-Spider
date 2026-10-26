@@ -1,9 +1,9 @@
-// @name: 乐兔
-// @author:
-// @description: 刮削：支持，弹幕：支持，嗅探：支持，广告：有
-// @dependencies: axios, cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/乐兔.js
+// @name 乐兔
+// @author
+// @description 刮削：支持，弹幕：支持，嗅探：支持，广告：有
+// @dependencies axios, cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/乐兔.js
 
 const axios = require("axios");
 const http = require("http");

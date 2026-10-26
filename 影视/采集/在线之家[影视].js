@@ -1,9 +1,9 @@
-// @name: 在线之家
-// @author: @PFR001, @lucky_TJQ
-// @description: 刮削：支持，弹幕：支持，嗅探：支持
-// @dependencies: axios, cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/在线之家.js
+// @name 在线之家
+// @author @PFR001, @lucky_TJQ
+// @description 刮削：支持，弹幕：支持，嗅探：支持
+// @dependencies axios, cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/在线之家.js
 
 /**
  * ============================================================================

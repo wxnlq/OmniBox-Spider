@@ -1,6 +1,6 @@
-// @name: 🔞-老色逼-
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集站/omnibox2-js-upload-main/Omnibox2-js/-老色逼-.js
+// @name 🔞-老色逼-
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集站/omnibox2-js-upload-main/Omnibox2-js/-老色逼-.js
 /**
  * OmniBox 采集站直接爬虫脚本
  *

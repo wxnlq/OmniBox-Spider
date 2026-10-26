@@ -1,7 +1,7 @@
-// @name: 太二影视
-// @description: 太二追剧页面解析，支持首页、分类、搜索、详情、多线路播放和嗅探兜底
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/太二影视.js
+// @name 太二影视
+// @description 太二追剧页面解析，支持首页、分类、搜索、详情、多线路播放和嗅探兜底
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/太二影视.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

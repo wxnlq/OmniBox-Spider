@@ -1,9 +1,9 @@
-// @name: 蜗牛4K
-// @author: @Tao_XG
-// @description: 刮削：支持，弹幕：支持，嗅探：支持。站点：zmi.kdns.fr（MacCMS mxone 模板，主推 115 分享）
-// @dependencies: axios, cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/蜗牛4K.js
+// @name 蜗牛4K
+// @author @Tao_XG
+// @description 刮削：支持，弹幕：支持，嗅探：支持。站点：zmi.kdns.fr（MacCMS mxone 模板，主推 115 分享）
+// @dependencies axios, cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/蜗牛4K.js
 
 // 引入 OmniBox SDK
 const OmniBox = require("omnibox_sdk");

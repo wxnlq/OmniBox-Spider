@@ -1,6 +1,6 @@
-// @name: 采集站模板
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/AV-番号资源[瑟瑟].js
+// @name 采集站模板
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/AV-番号资源[瑟瑟].js
 /**
  * OmniBox 采集站直接爬虫脚本
  *

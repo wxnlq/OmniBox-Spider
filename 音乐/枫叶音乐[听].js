@@ -1,9 +1,9 @@
-// @name: 枫叶音乐
-// @author:
-// @description:
-// @dependencies: axios
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/音乐/枫叶音乐.js
+// @name 枫叶音乐
+// @author
+// @description
+// @dependencies axios
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/音乐/枫叶音乐.js
 
 /**
  * ============================================================================

@@ -1,8 +1,8 @@
-// @name: 听友FM
-// @author: OmniBox助手
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/听书/听友FM.js
-// @dependencies: axios,cheerio,@noble/ciphers
+// @name 听友FM
+// @author OmniBox助手
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/听书/听友FM.js
+// @dependencies axios,cheerio,@noble/ciphers
 // notes:
 // 1) 分类/详情优先走页面结构与 Nuxt 数据，减少对加密接口的依赖。 
 // 2) 播放主链使用 /api/play_token，需按站点前端 v2 响应逻辑解包：nonce=bytes[1..24]，cipher=bytes[25..]，当 version===2 时先 reverse(cipher) 再解密。

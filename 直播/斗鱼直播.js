@@ -1,9 +1,9 @@
-// @name: 斗鱼直播
-// @author:
-// @description:
-// @dependencies: axios, crypto-js
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/直播/斗鱼直播.js
+// @name 斗鱼直播
+// @author
+// @description
+// @dependencies axios, crypto-js
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/直播/斗鱼直播.js
 
 /**
  * ============================================================================

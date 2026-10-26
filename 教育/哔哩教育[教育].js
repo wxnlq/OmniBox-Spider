@@ -1,9 +1,9 @@
-// @name: 哔哩教育
-// @author:
-// @description: 刮削：不支持，弹幕：支持，嗅探：不支持，登录：支持
-// @dependencies: axios, crypto
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/教育/哔哩教育.js
+// @name 哔哩教育
+// @author
+// @description 刮削：不支持，弹幕：支持，嗅探：不支持，登录：支持
+// @dependencies axios, crypto
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/教育/哔哩教育.js
 
 const axios = require("axios");
 const crypto = require("crypto");

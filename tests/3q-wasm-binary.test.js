@@ -1,5 +1,5 @@
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/tests/3q-wasm-binary.test.js
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/tests/3q-wasm-binary.test.js
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");

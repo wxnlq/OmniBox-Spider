@@ -1,9 +1,9 @@
-// @name: 网盘分享
-// @author: lampon
-// @description:
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/定时任务/网盘分享.js
-// @dependencies: crypto
+// @name 网盘分享
+// @author lampon
+// @description
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/定时任务/网盘分享.js
+// @dependencies crypto
 
 /**
  * 定时任务：将网盘分享链接入库到 media_library_items（全量 batch 入库）

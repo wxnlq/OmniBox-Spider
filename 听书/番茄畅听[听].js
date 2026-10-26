@@ -1,9 +1,9 @@
-// @name: 番茄畅听
-// @author:
-// @description:
-// @dependencies: crypto-js
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/听书/番茄畅听.js
+// @name 番茄畅听
+// @author
+// @description
+// @dependencies crypto-js
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/听书/番茄畅听.js
 
 
 /**

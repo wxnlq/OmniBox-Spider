@@ -1,8 +1,8 @@
-// @name: 播放记录拦截器
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/拦截器/JavaScript/播放/播放记录拦截器.js
-// @author: OpenCode
-// @description: 在 afterPlay 阶段自动记录观看历史（参考木偶.js / 嗷呜动漫.js play() 中的 addPlayHistory 调用）
-// @version: 1.0.0
+// @name 播放记录拦截器
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/拦截器/JavaScript/播放/播放记录拦截器.js
+// @author OpenCode
+// @description 在 afterPlay 阶段自动记录观看历史（参考木偶.js / 嗷呜动漫.js play() 中的 addPlayHistory 调用）
+// @version 1.0.0
 // @filter-stages play_after
 // @filter-config-schema {"description":"在播放阶段为当前播放条目添加观看历史记录","fields":[{"key":"recordEnabled","label":"启用播放记录","type":"boolean","required":false},{"key":"updateFavoriteEpisode","label":"更新收藏集数","type":"boolean","required":false,"placeholder":"播放后更新追剧进度"}]}
 

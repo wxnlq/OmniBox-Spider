@@ -1,9 +1,9 @@
-// @name: YY轮播
-// @author:
-// @description:
-// @dependencies: axios
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/直播/YY轮播.js
+// @name YY轮播
+// @author
+// @description
+// @dependencies axios
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/直播/YY轮播.js
 
 const axios = require("axios");
 const OmniBox = require("omnibox_sdk");

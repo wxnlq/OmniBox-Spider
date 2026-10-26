@@ -1,6 +1,6 @@
-// @name: 🎬百度云zy
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集站/omnibox2-js-upload-main/Omnibox2-js/百度云zy.js
+// @name 🎬百度云zy
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集站/omnibox2-js-upload-main/Omnibox2-js/百度云zy.js
 /**
  * OmniBox 采集站直接爬虫脚本
  *

@@ -1,9 +1,9 @@
-// @name: 不太灵
-// @author: 梦
-// @description: 资源网：详情与资源列表已接入；支持磁力/网盘资源展示
-// @dependencies: cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/磁力/不太灵.js
+// @name 不太灵
+// @author 梦
+// @description 资源网：详情与资源列表已接入；支持磁力/网盘资源展示
+// @dependencies cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/磁力/不太灵.js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

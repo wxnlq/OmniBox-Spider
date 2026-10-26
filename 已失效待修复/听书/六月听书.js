@@ -1,9 +1,9 @@
-// @name: 六月听书
-// @author:
-// @description:
-// @dependencies: crypto-js, cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/听书/六月听书.js
+// @name 六月听书
+// @author
+// @description
+// @dependencies crypto-js, cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/听书/六月听书.js
 
 
 /**

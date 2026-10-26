@@ -1,9 +1,9 @@
-// @name: 聚盘搜索分组 (pan.dyuzi.com)
-// @author: 梦
-// @description: 聚盘搜索分组版：搜索先按网盘分组，再进入二级结果；详情与播放沿用聚盘搜索的多层级展开、刮削、弹幕、观看记录能力
-// @dependencies: axios
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/聚盘搜索分组.js
+// @name 聚盘搜索分组 (pan.dyuzi.com)
+// @author 梦
+// @description 聚盘搜索分组版：搜索先按网盘分组，再进入二级结果；详情与播放沿用聚盘搜索的多层级展开、刮削、弹幕、观看记录能力
+// @dependencies axios
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/聚盘搜索分组.js
 
 
 const axios = require("axios");

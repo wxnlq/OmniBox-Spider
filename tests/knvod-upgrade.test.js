@@ -1,5 +1,5 @@
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/tests/knvod-upgrade.test.js
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/tests/knvod-upgrade.test.js
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");

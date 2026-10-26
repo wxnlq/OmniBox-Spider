@@ -1,9 +1,9 @@
-// @name: 星辰影院
-// @author: https://github.com/hjdhnx/drpy-node/blob/main/spider/js/%E6%98%9F%E8%BE%B0%E5%BD%B1%E9%99%A2%5B%E4%BC%98%5D.js
-// @description: 刮削：支持，弹幕：支持，嗅探：支持
-// @dependencies: axios, cheerio
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/星辰影院.js
+// @name 星辰影院
+// @author https://github.com/hjdhnx/drpy-node/blob/main/spider/js/%E6%98%9F%E8%BE%B0%E5%BD%B1%E9%99%A2%5B%E4%BC%98%5D.js
+// @description 刮削：支持，弹幕：支持，嗅探：支持
+// @dependencies axios, cheerio
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/星辰影院.js
 
 /**
  * ============================================================================

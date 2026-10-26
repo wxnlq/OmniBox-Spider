@@ -2,7 +2,7 @@
 # @name 极品少女
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/极品少女[瑟瑟].py
 # @version 0.0.1
-# @dependencies: pycryptodome
+# @dependencies pycryptodome
 
 import base64
 import html

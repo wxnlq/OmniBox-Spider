@@ -1,8 +1,8 @@
-// @name: 电影天堂
-// @author:
-// @description: 刮削：支持，弹幕：支持，嗅探：支持
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/电影天堂.js
+// @name 电影天堂
+// @author
+// @description 刮削：支持，弹幕：支持，嗅探：支持
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/电影天堂.js
 const OmniBox = require("omnibox_sdk");
 
 // ==================== 配置区域 ====================

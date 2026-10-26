@@ -1,6 +1,6 @@
-// @name: 🎬光速资源
-// @version: 1.0.0
-// @downloadURL: https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集站/omnibox2-js-upload-main/Omnibox2-js/光速资源.js
+// @name 🎬光速资源
+// @version 1.0.0
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集站/omnibox2-js-upload-main/Omnibox2-js/光速资源.js
 /**
  * OmniBox 采集站直接爬虫脚本
  *
