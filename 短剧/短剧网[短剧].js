@@ -3,7 +3,7 @@
 // @description 刮削：不支持，弹幕：不支持，嗅探：不支持（网盘直连）
 // @dependencies axios, cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/短剧/短剧网.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/短剧/短剧网[短剧].js
 
 /**
  * ============================================================================

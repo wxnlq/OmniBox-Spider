@@ -3,7 +3,7 @@
 // @description
 // @dependencies axios, cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/音乐/世纪音乐.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/音乐/世纪音乐[听].js
 
 /**
  * OmniBox - 世纪音乐爬虫（JavaScript 版）

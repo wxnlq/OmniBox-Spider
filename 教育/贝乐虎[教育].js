@@ -3,7 +3,7 @@
 // @description 刮削：不支持，弹幕：不支持，嗅探：不支持
 // @dependencies axios
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/教育/贝乐虎.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/教育/贝乐虎[教育].js
 
 /**
  * ============================================================================

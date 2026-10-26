@@ -3,7 +3,7 @@
 // @description 弹幕：支持
 // @dependencies axios, crypto
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/综合/哔哩大全.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/综合/哔哩大全[综合].js
 
 /**
  * 哔哩大全 - OmniBox 爬虫脚本（模板化版本）

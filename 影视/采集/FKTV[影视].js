@@ -3,7 +3,7 @@
 // @description 刮削：已接入，弹幕：未接入，嗅探：按官方 POST 播放接口直链优先（失败时页面回退）
 // @dependencies cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/FKTV.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/FKTV[影视].js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

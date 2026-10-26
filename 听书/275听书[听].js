@@ -2,7 +2,7 @@
 // @author
 // @description 275听书网有声小说源
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/听书/275听书.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/听书/275听书[听].js
 
 /**
  * OmniBox 听书源脚本：275听书

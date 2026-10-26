@@ -3,7 +3,7 @@
 // @description 页面解析：已接入；播放优先直解析，失败后 SDK 嗅探，再失败交给播放器嗅探
 // @dependencies cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/电影人生.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/电影人生[影视].js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

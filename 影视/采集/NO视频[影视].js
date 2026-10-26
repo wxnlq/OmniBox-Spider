@@ -2,7 +2,7 @@
 // @description NO视频 - https://www.novipnoad.net/ 海外剧集电影采集站
 // @dependencies cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/NO视频.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/NO视频[影视].js
 
 const cheerio = require("cheerio");
 const OmniBox = require("omnibox_sdk");

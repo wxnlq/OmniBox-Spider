@@ -3,7 +3,7 @@
 # @author 梦
 # @description 网盘源：https://www.panzun.cc/ ，Python版，接入首页、分类、搜索、详情与播放，支持 a.7u9.cn 短链解析到真实网盘分享
 # @version 1.0.0
-# @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/盘尊社区.py
+# @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/盘尊社区[网盘].py
 # @dependencies requests,curl_cffi
 
 import json

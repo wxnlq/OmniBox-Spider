@@ -3,7 +3,7 @@
 # @author OmniBox-Spider
 # @description 影视站：https://www.ztzssz.com，支持首页、分类筛选、搜索、详情与直链播放
 # @version 1.0.0
-# @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/808影视.py
+# @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/808影视[影视].py
 # @dependencies lxml
 
 import base64

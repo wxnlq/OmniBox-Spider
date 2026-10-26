@@ -3,7 +3,7 @@
 // @description 飞牛私有媒体库源，支持多站点、媒体库分类、目录展开、电影/剧集详情、原画/转码/外挂字幕
 // @dependencies axios
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/流媒体/飞牛.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/流媒体/飞牛[流媒体].js
 
 const axios = require("axios");
 const http = require("http");

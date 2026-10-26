@@ -3,7 +3,7 @@
 // @description 刮削：支持，弹幕：支持，嗅探：支持
 // @dependencies axios, cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/动漫/嗷呜动漫.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/动漫/嗷呜动漫[动漫].js
 /**
 * ============================================================================
 * 嗷呜动漫

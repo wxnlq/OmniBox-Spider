@@ -3,7 +3,7 @@
 // @description 刮削：支持，弹幕：支持，嗅探：支持，仅保留七味网盘线路的分组版本
 // @dependencies axios, cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/七味分组.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/七味分组[网盘].js
 
 const axios = require("axios");
 const cheerio = require("cheerio");

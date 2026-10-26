@@ -4,7 +4,7 @@
 // @origin https://github.com/hjdhnx/drpy-node/blob/main/spider/js/DJ%E9%9F%B3%E4%B9%90%5B%E5%90%AC%5D.js
 // @push 0
 // @dependencies cheerio
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/音乐/DJ音乐.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/音乐/DJ音乐[听].js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

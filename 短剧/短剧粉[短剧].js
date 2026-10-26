@@ -3,7 +3,7 @@
 // @description 页面解析：分类/详情/播放已接入；播放页直接解析 player_aaaa.url m3u8
 // @dependencies cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/短剧/短剧粉.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/短剧/短剧粉[短剧].js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

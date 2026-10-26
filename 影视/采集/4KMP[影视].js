@@ -3,7 +3,7 @@
 // @description 4k-av.com：支持首页、分类、搜索、详情与直链播放，站点请求使用苹果 Safari UA
 // @dependencies cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/4KMP.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/4KMP[影视].js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

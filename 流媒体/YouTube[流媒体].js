@@ -3,7 +3,7 @@
 // @description YouTube影视源，支持分组分类、二级筛选、搜索、播放列表与视频播放
 // @dependencies axios
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/流媒体/YouTube.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/流媒体/YouTube[流媒体].js
 
 const axios = require("axios");
 const OmniBox = require("omnibox_sdk");

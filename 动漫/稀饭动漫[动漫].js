@@ -3,7 +3,7 @@
 // @description 刮削：支持，弹幕：支持，嗅探：支持
 // @dependencies axios
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/%E5%8A%A8%E6%BC%AB/%E7%A8%80%E9%A5%AD%E5%8A%A8%E6%BC%AB.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/动漫/稀饭动漫[动漫].js
 
 /**
  * ============================================================================

@@ -3,7 +3,7 @@
 // @description 刮削：支持，弹幕：支持，嗅探：支持
 // @dependencies axios
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/%E5%8A%A8%E6%BC%AB/girigiri%E7%88%B1%E5%8A%A8%E6%BC%AB.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/动漫/girigiri爱动漫[动漫].js
 
 /**
  * ============================================================================

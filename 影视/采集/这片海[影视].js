@@ -3,7 +3,7 @@
 // @description 影视站：https://www.zhepianhai.com/ ，支持首页、分类、详情、搜索与播放（直链提取）
 // @dependencies cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/这片海.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/这片海[影视].js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

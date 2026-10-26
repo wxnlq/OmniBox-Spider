@@ -3,7 +3,7 @@
 // @author lampon
 // @description 豆瓣推荐爬虫脚本
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/导航/豆瓣推荐.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/模板/JavaScript/豆瓣推荐.js
 
 const OmniBox = require("omnibox_sdk");
 

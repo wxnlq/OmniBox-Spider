@@ -3,7 +3,7 @@
 // @description 刮削：未接入，弹幕：站内弹幕接口，嗅探：不需要
 // @dependencies
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/乌云影视.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/乌云影视[影视].js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

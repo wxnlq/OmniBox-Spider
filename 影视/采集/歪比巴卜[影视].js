@@ -7,7 +7,7 @@
  * @quickSearch 1
  * @changeable 0
  * @version 1.0.0
- * @downloadURL https://github.com/wxnlq/OmniBox-Spider/raw/main/影视/采集/歪比巴卜.js
+ * @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/歪比巴卜[影视].js
  */
 
 let OmniBox;

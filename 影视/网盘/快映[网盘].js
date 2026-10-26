@@ -3,7 +3,7 @@
 // @description 刮削：支持，弹幕：支持，播放记录：支持
 // @dependencies axios, cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/快映.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/快映[网盘].js
 
 // 引入 OmniBox SDK
 const OmniBox = require("omnibox_sdk");

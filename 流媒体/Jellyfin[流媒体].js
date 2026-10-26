@@ -4,7 +4,7 @@
 // @dependencies axios
 // @version 1.0.0
 // @indexs 影视
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/流媒体/Jellyfin.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/流媒体/Jellyfin[流媒体].js
 
 /**
  * ============================================================================

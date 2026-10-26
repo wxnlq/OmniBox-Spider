@@ -3,7 +3,7 @@
 // @author Silent1566
 // @origin repo.tvshare.cn/api/files/download/[REDACTED]
 // @push 0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/音乐/芸芸音乐.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/音乐/芸芸音乐[听].js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

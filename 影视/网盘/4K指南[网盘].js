@@ -2,7 +2,7 @@
 // @author 梦
 // @description 网盘资源站：https://4kzn.cc ，支持首页、分类、详情、搜索、网盘播放、刮削、弹幕、播放记录
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/4K指南.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/4K指南[网盘].js
 // @dependencies cheerio
 
 const OmniBox = require("omnibox_sdk");

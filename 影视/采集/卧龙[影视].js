@@ -2,7 +2,7 @@
 // @author lampon
 // @description
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/卧龙.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/卧龙[影视].js
 
 /**
  * OmniBox 采集站直接爬虫脚本

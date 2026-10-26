@@ -2,7 +2,7 @@
 // @author 梦
 // @description 页面解析：首页/分类/详情已接入；搜索直接走 ymck 聚合兜底；播放优先解析 yuplayer 接口并还原真实直链，失败时再回退 SDK 嗅探
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/蛋蛋鱼.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/蛋蛋鱼[影视].js
 // @dependencies axios,cheerio
 
 const axios = require("axios");

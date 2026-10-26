@@ -1,7 +1,7 @@
 // @name 听友FM
 // @author OmniBox助手
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/听书/听友FM.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/听书/听友FM[听].js
 // @dependencies axios,cheerio,@noble/ciphers
 // notes:
 // 1) 分类/详情优先走页面结构与 Nuxt 数据，减少对加密接口的依赖。 

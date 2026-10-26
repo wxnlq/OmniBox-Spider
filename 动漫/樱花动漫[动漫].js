@@ -3,7 +3,7 @@
 // @description 刮削：支持，弹幕：支持，嗅探：支持
 // @dependencies axios, cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/动漫/樱花动漫.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/动漫/樱花动漫[动漫].js
 /**
 * ============================================================================
 * 樱花动漫资源 - OmniBox 爬虫脚本（添加弹幕支持）

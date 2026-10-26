@@ -1,7 +1,7 @@
 // @name 88看球
 // @dependencies axios, cheerio, crypto-js
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/88看球.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/88看球[影视].js
 /**
  * 刮削：不支持
  * 弹幕：不支持

@@ -3,7 +3,7 @@
 # @author 梦
 # @description 影视站：https://film.symx.club ，Python版，接入首页、分类、搜索、详情与播放签名链路
 # @version 1.0.0
-# @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/木兮.py
+# @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/木兮[影视].py
 # @dependencies cloudscraper,curl_cffi,Pillow,ddddocr,pycryptodome
 
 import asyncio

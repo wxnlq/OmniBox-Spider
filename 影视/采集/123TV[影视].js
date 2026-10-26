@@ -3,7 +3,7 @@
 // @description 刮削：支持，弹幕：支持，嗅探：支持，广告：菠菜
 // @dependencies axios
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/123TV.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/123TV[影视].js
 
 /**
  * ============================================================================

@@ -4,7 +4,7 @@
 // @description 03 + 开心 + 真狼 (并发解析)
 // @dependencies axios, crypto, cheerio, http, https
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/影猫仓库.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/影猫仓库[影视].js
 
 const axios = require("axios");
 const cheerio = require("cheerio");

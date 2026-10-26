@@ -3,7 +3,7 @@
 // @description
 // @dependencies axios, crypto-js
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/短剧/短剧聚合.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/短剧/短剧聚合[短剧].js
 
 /**
  * ============================================================================

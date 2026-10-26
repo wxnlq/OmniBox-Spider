@@ -3,7 +3,7 @@
 // @description 页面解析：分类/详情/播放已接入；播放页直接解析 playUrls 多线路 m3u8
 // @dependencies cheerio
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/泰剧网.js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/泰剧网[影视].js
 
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");

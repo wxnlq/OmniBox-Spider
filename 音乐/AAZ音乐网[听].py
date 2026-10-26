@@ -3,7 +3,7 @@
 # @author 梦
 # @description 音乐站：https://www.aaz.cx/ ，支持榜单首页、搜索、歌曲详情与在线试听
 # @version 1.0.0
-# @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/音乐/AAZ音乐网.py
+# @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/音乐/AAZ音乐网[听].py
 # @dependencies requests,lxml
 
 import json
