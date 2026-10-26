@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @name bulunhufait 影视采集器
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/海角[瑟瑟].py
-# @version 0.0.1
+# @version 1.0.0
 # @indexs 1
 # @dependencies beautifulsoup4, lxml
 

@@ -2,7 +2,7 @@
 # @name 人人电影
 # @author 梦
 # @description 影视站：https://www.rrdynb.com/ ，支持首页、分类、搜索、详情与网盘线路提取（Python版）
-# @version 0.0.1
+# @version 1.0.0
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/网盘/人人电影.py
 
 import json

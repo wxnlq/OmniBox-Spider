@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @name UAA[听]
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/听书/uua有声[听].py
-# @version 0.0.1
+# @version 1.0.0
 
 import json
 import urllib.parse

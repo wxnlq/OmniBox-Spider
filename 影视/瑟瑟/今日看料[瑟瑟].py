@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @name 🌈 今日看料
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/今日看料[瑟瑟].py
-# @version 0.0.1
+# @version 1.0.0
 # 修复：数据正常 + 每个视频显示真实封面
 
 import json

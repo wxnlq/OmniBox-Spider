@@ -1,7 +1,7 @@
-// @name baoporn.com 站点适配版
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/爆色[瑟瑟].py
-// @version 0.0.1
-// @dependencies cheerio
+# @name baoporn.com 站点适配版
+# @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/爆色[瑟瑟].py
+# @version 1.0.0
+# @dependencies cheerio
 
 const OmniBox = require("omnibox_sdk");
 const cheerio = require("cheerio");

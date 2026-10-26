@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # @name 日日撸
-# @version 0.0.1
+# @version 1.0.0
 # @downloadURL https://gh-proxy.org/https://github.com/wxnlq/-box/raw/refs/heads/main/影视/瑟瑟/日日撸.py
 # @indexs 1
 # @dependencies requests,beautifulsoup4

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @name 海角社区
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/海角乱伦[瑟瑟].py
-# @version 0.0.1
+# @version 1.0.0
 # @dependencies pyquery
 
 import json

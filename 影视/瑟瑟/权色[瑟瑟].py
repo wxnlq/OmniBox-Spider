@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # @name 权色视频采集器
-# @version 0.0.1
+# @version 1.0.0
 # @downloadURL https://raw.githubusercontent.com/wxnlq/-box/refs/heads/main/权色.py
 # @indexs 1
 # @dependencies beautifulsoup4

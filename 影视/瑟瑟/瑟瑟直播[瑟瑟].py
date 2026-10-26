@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @name Leospring直播
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/瑟瑟直播[瑟瑟].py
-# @version 0.0.1
+# @version 1.0.0
 
 import json
 from spider_runner import OmniBox, run

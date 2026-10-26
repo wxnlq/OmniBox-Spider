@@ -1,4 +1,4 @@
-# @version 0.0.1
+# @version 1.0.0
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/tests/test_808_spider.py
 import asyncio
 import base64

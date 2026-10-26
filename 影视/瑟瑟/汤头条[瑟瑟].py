@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @version 0.0.1
+# @version 1.0.0
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/汤头条[瑟瑟].py
 # 汤头条 TVBox爬虫（全分类+封面）
 # 依赖：requests
