@@ -1,6 +1,6 @@
 // @name 采集站模板-自动解析视频type生成分类
 // @version 1.0.0
-// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/白嫖[瑟瑟].js
+// @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/性吧[瑟瑟].js
 /**
  * OmniBox 采集站直接爬虫脚本
  * 修改说明：
@@ -13,7 +13,7 @@ const OmniBox = require("omnibox_sdk");
 
 // ==================== 配置区域 ====================
 // 采集站 API 地址（优先使用环境变量，如果没有则使用默认值）
-const SITE_API = process.env.SITE_API || "https://www.pgxdy.com/api/json.php";
+const SITE_API = process.env.SITE_API || "https://xingba222.com/api.php/provide/vod/";
 
 // 弹幕 API 地址（优先使用环境变量，如果没有则使用默认值）
 // 如果为空，则不启用弹幕功能
