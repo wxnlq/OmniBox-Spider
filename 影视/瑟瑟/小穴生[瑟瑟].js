@@ -1,7 +1,7 @@
 // @name 小穴生
 // @version 1.0.0
 // @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/小穴生[瑟瑟].js
-// @dependencies spider_runner axios cheerio
+// @dependencies spider_runner,axios,cheerio
 const OmniBox = require("omnibox_sdk");
 const runner = require("spider_runner");
 const axios = require("axios");
