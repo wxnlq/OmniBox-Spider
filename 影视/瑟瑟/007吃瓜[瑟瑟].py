@@ -2,6 +2,7 @@
 # @name 🌈 91吃瓜中心|终极完美版
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/007吃瓜[瑟瑟].py
 # @version 1.0.0
+# @dependencies base64 urllib.parse requests Crypto.Cipher Crypto.Util.Padding
 
 import json
 import re

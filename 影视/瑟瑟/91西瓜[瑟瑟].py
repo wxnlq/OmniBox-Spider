@@ -2,7 +2,7 @@
 # @name 🌈 51吸瓜
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/91西瓜[瑟瑟].py
 # @version 1.0.0
-
+# @dependencies base64 urllib.parse
 import json
 import random
 import re
