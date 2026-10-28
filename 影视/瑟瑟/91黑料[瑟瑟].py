@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @name 首页
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/91黑料[瑟瑟].py
-# @version 1.0.0
+# @version 1.0.1
 # @dependencies bs4
 
 import sys
