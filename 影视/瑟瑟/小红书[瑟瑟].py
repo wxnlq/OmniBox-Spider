@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @name 🌈 51吸瓜
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/小红书[瑟瑟].py
-# @version 0.0.3
+# @version 1.0.0
 
 import json
 import random
