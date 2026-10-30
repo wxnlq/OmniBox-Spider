@@ -4,7 +4,7 @@
 # @description 影视站：https://ddys.io ，Python版，支持首页分类、分类列表、搜索、详情与播放
 # @version 1.0.0
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/采集/低端影视[影视].py
-# @dependencies requests,lxml
+# @dependencies requests, lxml
 
 import concurrent.futures
 import base64
@@ -12,7 +12,63 @@ import html
 import json
 import os
 import re
+import subprocess
+import sys
+import importlib.util
 from urllib.parse import quote
+
+
+def _install_missing_dependencies():
+    try:
+        with open(__file__, "r", encoding="utf-8") as f:
+            content = f.read()
+        deps = []
+        for line in content.splitlines():
+            if "@dependencies" not in line.lower():
+                continue
+            raw = line.split("@dependencies", 1)[1].strip()
+            for chunk in re.split(r"[\s,;]+", raw):
+                pkg = chunk.strip().strip("'\"[](){}")
+                if not pkg:
+                    continue
+                if "." in pkg:
+                    pkg = pkg.split(".", 1)[0]
+                deps.append(pkg)
+
+        alias_map = {
+            "bs4": "beautifulsoup4",
+            "Crypto": "pycryptodome",
+            "Crypto.Cipher": "pycryptodome",
+            "Crypto.Util.Padding": "pycryptodome",
+            "pycryptodome": "pycryptodome",
+            "lxml": "lxml",
+            "curl_cffi": "curl_cffi",
+            "requests": "requests",
+            "beautifulsoup4": "beautifulsoup4",
+            "pyquery": "pyquery",
+        }
+
+        need_install = []
+        seen = set()
+        for dep in deps:
+            dep_name = alias_map.get(dep, dep)
+            if dep_name in seen:
+                continue
+            seen.add(dep_name)
+            top = dep_name.split(".")[0]
+            try:
+                if importlib.util.find_spec(top) is None:
+                    need_install.append(dep_name)
+            except Exception:
+                need_install.append(dep_name)
+
+        if need_install:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", *need_install], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
+
+
+_install_missing_dependencies()
 
 import requests
 from lxml import etree
