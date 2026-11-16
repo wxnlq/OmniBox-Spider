@@ -5,532 +5,479 @@
 # 官网: https://d1drd.swwlt78.cfd/
 
 import base64
-import json
+import html as html_lib
+import random
 import re
+import string
 import threading
 import time
-from urllib.parse import quote, unquote, urljoin, urlparse
+from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import quote
 
-try:
-    from lxml import etree
-except ImportError:
-    etree = None
+import requests
+from Crypto.Cipher import AES
 
-try:
-    import requests
-    import urllib3
-    urllib3.disable_warnings()
-except ImportError:
-    requests = None
+from spider_runner import OmniBox, run
 
-try:
-    from spider_runner import OmniBox, run
-except ImportError:
-    OmniBox = None
-    def run(*args, **kwargs):
+# ====================== 配置 ======================
+SITE_HOSTS = [
+    "https://d1drd.swwlt78.cfd",
+]
+# 站点首页会随机生成 5 位子域做备用域名，主域失效时用这个后缀补一个
+HOST_SUFFIX = "swwlt78.cfd"
+
+UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 "
+      "(KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1")
+BASE_HEADERS = {
+    "User-Agent": UA,
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "zh-CN,zh;q=0.9",
+}
+
+CACHE_HOST_KEY = "swlt:host"
+COVER_CACHE_KEY = "swlt:cover"
+SEARCH_ID_KEY = "swlt:sid"
+
+# 首页取这几个分类拼（分类 id 会变，运行时优先从页面导航里现抓）
+HOME_TIDS = ["6097633", "6107633", "6257643"]
+HOME_PER_TID = 6
+
+_host_value = ""
+_host_lock = threading.Lock()
+_cover_cache = {}      # video_id -> cover url（进程内缓存）
+_sid_cache = {}        # keyword -> 搜索结果集 id
+
+
+# ====================== 页面解密 ======================
+def _b64(blob):
+    """页面里的 base64 可能带 \\/ 转义，补齐 padding 再解码。"""
+    blob = blob.replace("\\/", "/").strip()
+    blob += "=" * (-len(blob) % 4)
+    return base64.b64decode(blob)
+
+
+def decode_page(text):
+    """把站点的 AES-GCM 加密页还原成明文 HTML；本来就是明文则原样返回。"""
+    if "document.write" not in text:
+        return text
+
+    arrays = {}
+    for m in re.finditer(r"([A-Za-z0-9_$]+)\s*=\s*(\[\[.*?\]\])", text, re.S):
+        parts = re.findall(r'\[(\d+),\s*"([^"]*)"\]', m.group(2))
+        if not parts:
+            continue
+        parts.sort(key=lambda x: int(x[0]))
+        try:
+            arrays[m.group(1)] = _b64("".join(p[1] for p in parts))
+        except Exception:
+            continue
+    if not arrays:
         return None
 
-try:
-    from base.spider import Spider as BaseSpider
-except ImportError:
-    class BaseSpider:
-        def init(self, extend=""):
-            pass
-        def homeContent(self, filter):
-            return {"class": [], "list": []}
-        def homeVideoContent(self):
-            return {"list": []}
-        def categoryContent(self, tid, pg, filter, extend):
-            return {"list": [], "page": 1, "pagecount": 1, "limit": 24, "total": 0}
-        def detailContent(self, ids):
-            return {"list": []}
-        def playerContent(self, flag, id, vipFlags=None):
-            return {"parse": 0, "url": id, "header": {}}
-        def searchContent(self, key, quick, pg='1'):
-            return {"list": [], "page": 1, "pagecount": 1, "limit": 24, "total": 0}
-        def isVideoFormat(self, url):
-            return bool(url and any(x in url for x in ['.m3u8', '.mp4', '.flv', '.ts']))
-        def manualVideoCheck(self):
-            return False
-        def localProxy(self, param):
-            return [200, 'video/MP2T', b'', {}]
+    ordered = sorted(arrays.items(), key=lambda kv: len(kv[1]))
+    cipher_text = ordered[-1][1]
+    small = ordered[:-1]
+    keys = [v for _, v in small if len(v) == 32]
 
+    def js_var(kind):
+        # 直接读 JS 里 nonce / additionalData 引用的变量名，不靠长度猜
+        m = re.search(kind + r":\s*[A-Za-z0-9_$]+\(\s*[A-Za-z0-9_$]+\(\s*([A-Za-z0-9_$]+)", text)
+        return arrays.get(m.group(1)) if m else None
 
-def d_decode(encoded_str):
-    """模拟 JavaScript d() 函数的解码行为"""
-    if not encoded_str or not isinstance(encoded_str, str):
-        return ""
+    iv = js_var("nonce")
+    aad = js_var("additionalData")
+    if iv is None or aad is None or len(keys) != 2:
+        rest = [v for _, v in small if len(v) not in (32, 12)]
+        iv = iv or next((v for _, v in small if len(v) == 12), None)
+        aad = aad or (rest[0] if rest else None)
+    if iv is None or aad is None or len(keys) != 2:
+        return None
+
+    key = bytes(a ^ b for a, b in zip(keys[0], keys[1]))
     try:
-        decoded_bytes = base64.b64decode(encoded_str)
-        text = decoded_bytes.decode('utf-8', errors='replace')
-        return text
+        box = AES.new(key, AES.MODE_GCM, nonce=iv)
+        box.update(aad)
+        return box.decrypt_and_verify(cipher_text[:-16], cipher_text[-16:]).decode("utf-8", "replace")
     except Exception:
-        return encoded_str
+        return None
 
 
-def clean_hidden_spans(text):
-    if not text:
-        return ""
-    text = re.sub(
-        r'<span[^>]*display\s*:\s*none[^>]*>[^<]*</span>',
-        '',
-        text,
-        flags=re.IGNORECASE | re.DOTALL,
+# ====================== 域名 ======================
+def _rand_host():
+    return "https://%s.%s" % (
+        "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(5)),
+        HOST_SUFFIX,
     )
-    return text.strip()
 
 
-def d_clean(encoded_str):
-    decoded = d_decode(encoded_str)
-    return clean_hidden_spans(decoded)
-
-
-def fix_url(url, host):
-    if not url:
-        return ""
-    if url.startswith("//"):
-        return "https:" + url
-    if url.startswith("/"):
-        return urljoin(host, url)
-    if url.startswith("http"):
-        return url
-    return urljoin(host, "/" + url)
-
-
-def clean_text(text):
-    if not text:
-        return ""
-    text = str(text)
-    text = re.sub(r'<[^>]+>', '', text)
-    text = re.sub(r'\s+', ' ', text)
-    return text.strip()
-
-
-def extract_play_url(html_text, host):
-    if not html_text:
-        return ""
-    patterns = [
-        r'(https?://[^\s"\']+\.m3u8[^\s"\']*)',
-        r'(https?://[^\s"\']+\.mp4[^\s"\']*)',
-        r'var\s+now\s*=\s*[\'\"]([^\'\"]+)[\'\"]',
-        r'player_data\s*=\s*(\{.*?\})',
-        r'<iframe[^>]+src=["\']([^"\']+)["\']',
-        r'videoSources\s*:\s*(\[.*?\])',
-        r'wvPlayer\.play\s*\(\s*["\']([^"\']+)["\']',
-        r'url\s*:\s*["\']([^"\']+\.m3u8)["\']',
-        r'var\s+playurl\s*=\s*["\']([^"\']+)["\']',
-    ]
-    for pat in patterns:
-        m = re.search(pat, html_text, re.DOTALL)
-        if m:
-            result = m.group(1)
-            if pat.endswith('})'):
-                try:
-                    result = json.loads(result).get('url', '')
-                except Exception:
-                    continue
-            elif pat == r'<iframe[^>]+src=["\']([^"\']+)["\']':
-                iframe_url = fix_url(result, host)
-                try:
-                    r = requests.get(
-                        iframe_url,
-                        headers={"User-Agent": "Mozilla/5.0", "Referer": host},
-                        timeout=10,
-                        verify=False,
-                    )
-                    return extract_play_url(r.text, iframe_url)
-                except Exception:
-                    pass
-            elif 'videoSources' in pat:
-                try:
-                    result = json.loads(result)[0].get('file', '')
-                except Exception:
-                    continue
-            return result
+def _probe(url):
+    try:
+        r = requests.get(url + "/", headers=BASE_HEADERS, timeout=8)
+        if r.status_code == 200 and ("document.write" in r.text or "vod-card" in r.text):
+            return url
+    except Exception:
+        pass
     return ""
 
 
-def decode_all_d_calls(html_text):
-    def replacer(m):
-        encoded = m.group(1)
-        return d_clean(encoded)
+def detect_host():
+    for host in SITE_HOSTS:
+        got = _probe(host)
+        if got:
+            return got
+    for i in range(3):
+        got = _probe(_rand_host())
+        if got:
+            return got
+    return SITE_HOSTS[0]
 
-    return re.sub(
-        r"document\.write\(d\('([^']+)'\)\)",
-        replacer,
-        html_text,
-    )
 
-
-class Spider(BaseSpider):
-    def __init__(self):
-        super().__init__()
-        self.host = "https://d1drd.swwlt78.cfd/"
-        self.name = "ZheTian_SWLT_DiBing"
-        self.s = requests.Session() if requests else None
-        self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-            "Referer": self.host + "/",
-            "Upgrade-Insecure-Requests": "1",
-        }
-        self.seen_ids = set()
-        self._category_cache = {}
-        if self.s:
-            self.s.headers.update(self.headers)
-            self.s.verify = False
-
-    def init(self, extend=""):
-        if extend and extend.startswith("http"):
-            self.host = extend.rstrip("/")
-            self.headers["Referer"] = self.host + "/"
-            if self.s:
-                self.s.headers.update(self.headers)
-
-    def getName(self):
-        return self.name
-
-    def isVideoFormat(self, url):
-        return any(x in (url or "") for x in [".m3u8", ".mp4", ".flv", ".ts"])
-
-    def manualVideoCheck(self):
-        return False
-
-    def localProxy(self, param):
-        return [200, "video/MP2T", b"", {}]
-
-    def _fetch(self, url, referer=None):
-        if not self.s:
-            return ""
-        headers = dict(self.headers)
-        if referer:
-            headers["Referer"] = referer
+async def ensure_host():
+    global _host_value
+    if _host_value:
+        return _host_value
+    with _host_lock:
+        if _host_value:
+            return _host_value
         try:
-            r = self.s.get(url, timeout=15, headers=headers)
-            r.raise_for_status()
-            r.encoding = 'utf-8'
-            return r.text
-        except Exception as e:
-            print(f"[{self.name}] _fetch失败: {url} - {e}")
-            return ""
-
-    def _post_fetch(self, url, data, referer=None):
-        if not self.s:
-            return ""
-        headers = dict(self.headers)
-        if referer:
-            headers["Referer"] = referer
+            cached = await OmniBox.getCache(CACHE_HOST_KEY) or ""
+        except Exception:
+            cached = ""
+        _host_value = cached or detect_host()
         try:
-            r = self.s.post(url, data=data, timeout=15, headers=headers)
-            r.raise_for_status()
-            r.encoding = 'utf-8'
-            return r.text
-        except Exception as e:
-            print(f"[{self.name}] _post_fetch失败: {url} - {e}")
-            return ""
+            await OmniBox.setCache(CACHE_HOST_KEY, _host_value, 3600)
+        except Exception:
+            pass
+    return _host_value
 
-    def _build_categories(self, html_text):
-        if self._category_cache:
-            return self._category_cache
-        categories = []
-        seen_names = set()
-        nav_pattern = re.findall(
-            r'<a[^>]+href="/list\.php\?id=(\d+)&page=1"[^>]*>'
-            r'<script[^>]*>document\.write\(d\(\'([^\']+)\'\)\)</script>'
-            r'\s*</a>',
-            html_text,
-        )
-        for type_id, encoded_name in nav_pattern:
-            name = d_clean(encoded_name)
-            name = clean_text(name)
-            if name and name not in seen_names and len(name) < 20:
-                seen_names.add(name)
-                categories.append({"type_id": type_id, "type_name": name})
-        if len(categories) < 3:
-            categories = [
-                {"type_id": "6097633", "type_name": "精品推荐"},
-                {"type_id": "6107633", "type_name": "国产精品"},
-                {"type_id": "6117633", "type_name": "探花系列"},
-                {"type_id": "6127633", "type_name": "自拍偷拍"},
-                {"type_id": "6137633", "type_name": "少女少妇"},
-                {"type_id": "6147633", "type_name": "无码专区"},
-                {"type_id": "6157633", "type_name": "欧美性爱"},
-                {"type_id": "6167633", "type_name": "颜值正妹"},
-            ]
-        self._category_cache = categories
-        return categories
 
-    def _parse_vod_cards(self, html_text, base_url):
-        results = []
-        self.seen_ids.clear()
-        if etree:
-            doc = etree.HTML(html_text)
-            items = doc.xpath('//li[contains(@class,"vod-card")]')
-            if not items:
-                items = doc.xpath('//div[contains(@class,"vod-card")]')
-            if not items:
-                items = doc.xpath('//a[contains(@class,"card-thumb")]/..')
-            for item in items:
-                try:
-                    link = item.xpath('.//a[contains(@class,"card-thumb")]/@href')
-                    if not link:
-                        link = item.xpath('.//a[contains(@href,"/video.php")]/@href')
-                    href = link[0] if link else ""
-                    vid_match = re.search(r'id=(\d+)', href)
-                    vid = vid_match.group(1) if vid_match else ""
-                    if not vid or vid in self.seen_ids:
-                        continue
-                    self.seen_ids.add(vid)
-                    img = item.xpath('.//img[contains(@class,"lazy")]/@data-original')
-                    if not img:
-                        img = item.xpath('.//img/@data-original')
-                    if not img:
-                        img = item.xpath('.//img/@src')
-                    pic = fix_url(img[0], base_url) if img else ""
-                    title_text = ""
-                    title_a = item.xpath('.//h5[contains(@class,"card-title")]/a')
-                    if title_a:
-                        raw_title = etree.tostring(title_a[0], encoding='unicode')
-                        d_calls = re.findall(r"d\('([^']+)'\)", raw_title)
-                        if d_calls:
-                            title_text = d_clean(d_calls[0])
-                            title_text = clean_hidden_spans(title_text)
-                        else:
-                            title_text = title_a[0].xpath('string(.)')
-                    title_text = clean_text(title_text)
-                    if title_text and vid:
-                        results.append({
-                            "vod_id": vid,
-                            "vod_name": title_text[:100],
-                            "vod_pic": pic,
-                            "vod_remarks": "",
-                        })
-                except Exception as e:
-                    print(f"[{self.name}] 卡片解析失败: {e}")
-                    continue
-        if not results:
-            vid_matches = re.findall(r'<a[^>]+href="/video\.php\?id=(\d+)"[^>]*>', html_text)
-            for vid in vid_matches[:30]:
-                if vid not in self.seen_ids:
-                    self.seen_ids.add(vid)
-                    results.append({
-                        "vod_id": vid,
-                        "vod_name": f"视频{vid}",
-                        "vod_pic": "",
-                        "vod_remarks": "",
-                    })
-        return results
+# ====================== 请求 ======================
+def _headers(host):
+    d = dict(BASE_HEADERS)
+    d["Referer"] = host + "/"
+    return d
 
-    def homeContent(self, filter):
+
+def get_page(url, host, retry=2):
+    last = ""
+    for _ in range(retry + 1):
         try:
-            html_text = self._fetch(self.host + "/")
-            if not html_text:
-                return {"class": [], "list": []}
-            categories = self._build_categories(html_text)
-            vod_list = self._parse_vod_cards(html_text, self.host)
-            return {
-                "class": categories[:24],
-                "filters": {
-                    cat["type_id"]: [
-                        {"key": "area", "name": "地区", "value": [
-                            {"n": "全部", "v": ""}, {"n": "大陆", "v": "大陆"},
-                            {"n": "日韩", "v": "日韩"}, {"n": "欧美", "v": "欧美"}
-                        ]},
-                        {"key": "by", "name": "排序", "value": [
-                            {"n": "最新", "v": "time"}, {"n": "最热", "v": "hits"}
-                        ]}
-                    ] for cat in categories[:8]
-                },
-                "list": vod_list[:12]
-            }
-        except Exception as e:
-            print(f"[{self.name}] homeContent失败: {e}")
-            return {"class": [], "list": []}
+            r = requests.get(url, headers=_headers(host), timeout=18)
+            r.encoding = "utf-8"
+            page = decode_page(r.text)
+            if page:
+                return page
+            last = "解密失败(%d)" % r.status_code
+        except Exception as exc:
+            last = str(exc)
+        time.sleep(0.6)
+    raise RuntimeError(last or "请求失败")
 
-    def homeVideoContent(self):
-        return self.categoryContent("6097633", "1", False, {})
 
-    def categoryContent(self, tid, pg, filter, extend):
-        try:
-            pg = int(pg) if pg else 1
-            url = f"{self.host}/list.php?id={tid}&page={pg}"
-            html_text = self._fetch(url, self.host + "/")
-            result = {"list": [], "page": pg, "pagecount": pg + 1, "limit": 24, "total": 0}
-            if not html_text:
-                return result
-            vod_list = self._parse_vod_cards(html_text, self.host)
-            result["list"] = vod_list
-            pc_match = re.search(r'pagecount[=:]\s*(\d+)', html_text, re.I)
-            if not pc_match:
-                pc_match = re.search(r'共\s*(\d+)\s*页', html_text)
-            if pc_match:
-                result["pagecount"] = int(pc_match.group(1))
-            return result
-        except Exception as e:
-            print(f"[{self.name}] categoryContent失败: {e}")
-            return {"list": [], "page": int(pg), "pagecount": 1, "limit": 24, "total": 0}
+def abs_url(host, u):
+    u = (u or "").strip()
+    if not u:
+        return ""
+    if u.startswith("//"):
+        return "https:" + u
+    if u.startswith("/"):
+        return host + u
+    return u
 
-    def detailContent(self, ids):
-        try:
-            vid = ids[0] if isinstance(ids, list) else ids
-            url = f"{self.host}/video.php?id={vid}"
-            html_text = self._fetch(url, self.host + "/")
-            result = {"list": []}
-            if not html_text:
-                return result
-            title = vid
+
+# ====================== 解析 ======================
+CARD_RE = re.compile(r'<li class="vod-card">(.*?)</li>', re.S)
+LINK_RE = re.compile(r'href="(/video\.php\?id=(\d+))"')
+IMG_RE = re.compile(r'data-original="([^"]+)"')
+IMG_SRC_RE = re.compile(r'<img[^>]*?\ssrc="([^"]+)"')
+TITLE_RE = re.compile(r'class="card-title"><a[^>]*>(.*?)</a>', re.S)
+CAT_RE = re.compile(r'class="card-cat">([^<]*)<')
+NAV_RE = re.compile(r'<a href="/list\.php\?id=(\d+)&page=1"[^>]*class="nav-item"[^>]*>([^<]+)</a>')
+PAGE_RE = re.compile(r"共\s*(\d+)\s*条.*?第\s*(\d+)\s*/\s*(\d+)\s*页", re.S)
+SID_RE = re.compile(r"location\.href='/list\.php\?id=(\d+)&page='")
+
+
+def parse_cards(page, host):
+    """返回 [(vid, title, pic, cat)]，自动剔掉推荐位广告卡。"""
+    out, seen = [], set()
+    for block in CARD_RE.findall(page):
+        link = LINK_RE.search(block)
+        if not link:
+            continue
+        vid = link.group(2)
+        if vid in seen:
+            continue
+        seen.add(vid)
+        title_m = TITLE_RE.search(block)
+        title = html_lib.unescape(re.sub(r"<[^>]+>", "", title_m.group(1))).strip() if title_m else ""
+        img_m = IMG_RE.search(block) or IMG_SRC_RE.search(block)
+        pic = abs_url(host, img_m.group(1)) if img_m else ""
+        if pic.endswith("loading.svg"):
             pic = ""
-            if etree:
-                doc = etree.HTML(html_text)
-                title_el = doc.xpath('//h1/text()|//h2/text()|//h5/text()|//title/text()')
-                if title_el:
-                    title = clean_text(title_el[0])
-                pic_el = doc.xpath('//img[contains(@class,"lazy")]/@data-original')
-                if not pic_el:
-                    pic_el = doc.xpath('//img/@data-original')
-                if not pic_el:
-                    pic_el = doc.xpath('//img/@src')
-                if pic_el:
-                    pic = fix_url(pic_el[0], self.host)
-            play_url_raw = extract_play_url(html_text, self.host)
-            if not play_url_raw:
-                d_calls = re.findall(r"d\('([^']+)'\)", html_text)
-                for dc in d_calls:
-                    decoded = d_clean(dc)
-                    m3u8_in = re.search(r'(https?://[^\s"\']+\.m3u8[^\s"\']*)', decoded)
-                    if m3u8_in:
-                        play_url_raw = m3u8_in.group(1)
-                        break
-            episode_links = re.findall(
-                r'<a[^>]+href="([^"]*video\.php\?id=\d+[^"]*)"[^>]*>([^<]*)</a>',
-                html_text,
-            )
-            sources = []
-            play_urls = []
-            if episode_links:
-                ep_list = []
-                for ep_href, ep_label in episode_links:
-                    ep_url = fix_url(ep_href, self.host)
-                    ep_name = clean_text(ep_label) or "播放"
-                    ep_list.append(f"{ep_name}${ep_url}")
-                sources.append("默认线路")
-                play_urls.append("#".join(ep_list))
-            if play_url_raw:
-                if not sources:
-                    sources.append("默认线路")
-                    play_urls.append(f"正片${play_url_raw}")
-            if not sources:
-                sources.append("默认线路")
-                play_urls.append(f"播放${url}")
-            result["list"].append({
-                "vod_id": vid,
-                "vod_name": title,
-                "vod_pic": pic,
-                "vod_play_from": "$$$".join(sources),
-                "vod_play_url": "$$$".join(play_urls),
-            })
-            return result
-        except Exception as e:
-            print(f"[{self.name}] detailContent失败: {e}")
-            return {"list": []}
+        cat_m = CAT_RE.search(block)
+        cat = cat_m.group(1).strip() if cat_m else ""
+        if not title:
+            continue
+        out.append((vid, title, pic, cat))
+        if pic:
+            _cover_cache[vid] = pic
+    return out
 
-    def playerContent(self, flag, id, vipFlags=None):
+
+def parse_classes(page):
+    classes, seen = [], set()
+    for cid, name in NAV_RE.findall(page):
+        if cid in seen:
+            continue
+        seen.add(cid)
+        classes.append({"type_id": cid, "type_name": html_lib.unescape(name).strip()})
+    return classes
+
+
+def parse_pagecount(page):
+    m = PAGE_RE.search(page)
+    return int(m.group(3)) if m else 1
+
+
+def parse_total(page):
+    m = PAGE_RE.search(page)
+    return int(m.group(1)) if m else 0
+
+
+def parse_player(page, host):
+    """从详情页取播放地址（HLS m3u8 明文写在 script 里）。"""
+    urls = []
+    for pat in (r"hls\.loadSource\(\s*['\"]([^'\"]+)['\"]",
+                r"video\.src\s*=\s*['\"]([^'\"]+)['\"]",
+                r'"url"\s*:\s*"([^"]+\.m3u8[^"]*)"',
+                r"<iframe[^>]+src=\"([^\"]+)\""):
+        for m in re.finditer(pat, page):
+            u = html_lib.unescape(m.group(1))
+            if u and u not in urls:
+                urls.append(u)
+    if not urls:
+        m = re.search(r"(https?://[^'\"\s]+\.m3u8[^'\"\s]*)", page)
+        if m:
+            urls.append(m.group(1))
+    return [abs_url(host, u) for u in urls]
+
+
+def city(txt):
+    return html_lib.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", txt or ""))).strip()
+
+
+# ====================== 封面补全（详情页本身不带封面） ======================
+def lookup_cover(host, vid, title):
+    """详情页没有本片封面：用标题回搜索页按 id 精确捞一张。"""
+    if not title:
+        return ""
+    clean = re.sub(r"[\[\]【】()（）<>《》?？!！,，.。]", " ", title)
+    keys = []
+    for k in (title[:40], clean[:20], clean[:10]):
+        k = k.strip()
+        if k and k not in keys:
+            keys.append(k)
+    for key in keys:
         try:
-            result = {"parse": 0, "playUrl": "", "url": "", "header": {}}
-            if self.isVideoFormat(id):
-                result["url"] = id
-                result["header"] = {
-                    "Referer": self.host + "/",
-                    "User-Agent": self.headers["User-Agent"]
-                }
-                return result
-            if id.startswith("http"):
-                html_text = self._fetch(id, self.host + "/")
-                if html_text:
-                    play_url = extract_play_url(html_text, self.host)
-                    if play_url:
-                        result["url"] = play_url
-                        result["header"] = {
-                            "Referer": id,
-                            "User-Agent": self.headers["User-Agent"]
-                        }
-                        return result
-            result["url"] = id
-            result["header"] = {
-                "Referer": self.host + "/",
-                "User-Agent": self.headers["User-Agent"],
-            }
-            return result
-        except Exception as e:
-            print(f"[{self.name}] playerContent失败: {e}")
-            return {"parse": 0, "playUrl": "", "url": id, "header": {}}
+            page = get_page(host + "/search.php?content=" + quote(key), host)
+        except Exception:
+            continue
+        for block in CARD_RE.findall(page):
+            link = LINK_RE.search(block)
+            if not link or link.group(2) != vid:
+                continue
+            img_m = IMG_RE.search(block) or IMG_SRC_RE.search(block)
+            if img_m:
+                pic = abs_url(host, img_m.group(1))
+                if pic and not pic.endswith("loading.svg"):
+                    _cover_cache[vid] = pic
+                    return pic
+    return ""
 
-    def searchContent(self, key, quick, pg='1'):
+
+async def cover_for(host, vid, title):
+    if vid in _cover_cache:
+        return _cover_cache[vid]
+    try:
+        cached = await OmniBox.getCache("%s:%s" % (COVER_CACHE_KEY, vid)) or ""
+    except Exception:
+        cached = ""
+    if cached:
+        _cover_cache[vid] = cached
+        return cached
+    pic = lookup_cover(host, vid, title)
+    if pic:
         try:
-            pg = int(pg) if pg else 1
-            url = f"{self.host}/search.php"
-            data = {"content": key}
-            html_text = self._post_fetch(url, data, self.host + "/")
-            result = {"list": [], "page": pg, "pagecount": 1, "limit": 24, "total": 0}
-            if not html_text:
-                return result
-            vod_list = self._parse_vod_cards(html_text, self.host)
-            result["list"] = vod_list
-            return result
-        except Exception as e:
-            print(f"[{self.name}] searchContent失败: {e}")
-            return {"list": [], "page": int(pg), "pagecount": 1, "limit": 24, "total": 0}
+            await OmniBox.setCache("%s:%s" % (COVER_CACHE_KEY, vid), pic, 86400)
+        except Exception:
+            pass
+    return pic
 
 
-async def home(params, context):
-    spider = Spider()
-    spider.init("")
-    return spider.homeContent(False)
-
-
-async def category(params, context):
-    spider = Spider()
-    spider.init("")
-    tid = (params or {}).get('categoryId') or '6097633'
-    page = (params or {}).get('page') or 1
-    return spider.categoryContent(tid, page, False, {})
-
-
-async def detail(params, context):
-    spider = Spider()
-    spider.init("")
-    video_id = (params or {}).get('videoId') or []
-    return spider.detailContent(video_id)
-
-
-async def search(params, context):
-    spider = Spider()
-    spider.init("")
-    keyword = (params or {}).get('keyword') or (params or {}).get('wd') or ''
-    page = (params or {}).get('page') or '1'
-    return spider.searchContent(keyword, False, page)
-
-
-async def play(params, context):
-    spider = Spider()
-    spider.init("")
-    play_id = (params or {}).get('playId') or ''
-    flag = (params or {}).get('flag') or 'play'
-    result = spider.playerContent(flag, play_id, None)
+# ====================== 组装列表项 ======================
+def build_item(vid, title, pic, cat, tid=""):
     return {
-        'urls': [{'name': '播放', 'url': result.get('url', play_id)}],
-        'flag': flag,
-        'header': result.get('header', {}),
-        'parse': result.get('parse', 0),
+        "vod_id": vid,
+        "vod_name": title,
+        "vod_pic": pic,
+        "type_id": tid or "",
+        "type_name": cat or "",
+        "vod_remarks": cat or "",
+        "vod_year": "",
+        "vod_douban_score": "",
     }
 
 
-if __name__ == '__main__':
+# ====================== 五个标准 handler ======================
+async def home(params, context):
+    host = await ensure_host()
+    try:
+        first = get_page(host + "/", host)
+        classes = parse_classes(first)
+    except Exception as exc:
+        await OmniBox.log("error", "[home] 首页失败: %s" % exc)
+        return {"class": [], "list": []}
+
+    def fetch(tid):
+        try:
+            page = get_page("%s/list.php?id=%s&page=1" % (host, tid), host)
+            return tid, parse_cards(page, host)[:HOME_PER_TID]
+        except Exception:
+            return tid, []
+
+    items = []
+    with ThreadPoolExecutor(max_workers=len(HOME_TIDS)) as pool:
+        for tid, cards in pool.map(fetch, HOME_TIDS):
+            for vid, title, pic, cat in cards:
+                items.append(build_item(vid, title, pic, cat, tid))
+    await OmniBox.log("info", "[home] 分类 %d 个 / 影片 %d 条" % (len(classes), len(items)))
+    return {"class": classes, "list": items}
+
+
+async def category(params, context):
+    tid = str(params.get("categoryId") or "").strip()
+    page_no = int(params.get("page") or 1)
+    host = await ensure_host()
+    if not tid or tid == "/":
+        data = await home(params, context)
+        return {"page": 1, "pagecount": 1, "total": len(data.get("list") or []),
+                "list": data.get("list") or []}
+    try:
+        page = get_page("%s/list.php?id=%s&page=%d" % (host, tid, page_no), host)
+        cards = parse_cards(page, host)
+        items = [build_item(v, t, p, c, tid) for v, t, p, c in cards]
+        total_page = parse_pagecount(page)
+        await OmniBox.log("info", "[category] %s p%d -> %d 条 / 共 %d 页" % (tid, page_no, len(items), total_page))
+        return {"page": page_no, "pagecount": total_page, "total": parse_total(page), "list": items}
+    except Exception as exc:
+        await OmniBox.log("error", "[category] 失败: %s" % exc)
+        return {"page": page_no, "pagecount": 1, "total": 0, "list": []}
+
+
+async def detail(params, context):
+    vid = str(params.get("videoId") or "").strip()
+    if not vid:
+        return {"list": []}
+    host = await ensure_host()
+    if "id=" in vid:
+        vid = vid.split("id=")[-1].split("&")[0]
+    try:
+        page = get_page("%s/video.php?id=%s" % (host, vid), host)
+        m = re.search(r'<h1 class="video-title">(.*?)</h1>', page, re.S)
+        if not m or not city(m.group(1)):
+            await OmniBox.log("warn", "[detail] %s 无内容（可能已下架）" % vid)
+            return {"list": []}
+        title = city(m.group(1))
+        pic = await cover_for(host, vid, title)
+        notice = re.search(r'class="video-notice">(.*?)</div>', page, re.S)
+        content = city(notice.group(1)) if notice else ""
+        urls = parse_player(page, host)
+        episodes = [{"name": "正片" if len(urls) == 1 else "线路%d" % (i + 1), "playId": u}
+                    for i, u in enumerate(urls)]
+        if not episodes:
+            episodes = [{"name": "正片", "playId": "%s/video.php?id=%s" % (host, vid)}]
+        await OmniBox.log("info", "[detail] %s -> %s / 播放 %d 条" % (vid, title[:20], len(episodes)))
+        return {
+            "list": [{
+                "vod_id": vid,
+                "vod_name": title,
+                "vod_pic": pic,
+                "vod_content": content or title,
+                "vod_year": "",
+                "vod_remarks": "",
+                "vod_douban_score": "",
+                "vod_actor": "",
+                "vod_director": "",
+                "vod_area": "",
+                "vod_play_sources": [{"name": "丝袜乐土", "episodes": episodes}],
+            }]
+        }
+    except Exception as exc:
+        await OmniBox.log("error", "[detail] 失败: %s" % exc)
+        return {"list": []}
+
+
+async def search(params, context):
+    key = (params.get("keyword") or params.get("wd") or "").strip()
+    page_no = int(params.get("page") or 1)
+    if not key:
+        return {"page": 1, "pagecount": 0, "total": 0, "list": []}
+    host = await ensure_host()
+    try:
+        sid = ""
+        if page_no > 1:
+            sid = _sid_cache.get(key, "")
+            if not sid:
+                try:
+                    sid = await OmniBox.getCache("%s:%s" % (SEARCH_ID_KEY, key)) or ""
+                except Exception:
+                    sid = ""
+        if sid:
+            url = "%s/list.php?id=%s&page=%d" % (host, sid, page_no)
+        else:
+            url = "%s/search.php?content=%s" % (host, quote(key))
+        page = get_page(url, host)
+
+        m = SID_RE.search(page)
+        if m:
+            sid = m.group(1)
+            _sid_cache[key] = sid
+            try:
+                await OmniBox.setCache("%s:%s" % (SEARCH_ID_KEY, key), sid, 1800)
+            except Exception:
+                pass
+
+        cards = parse_cards(page, host)
+        items = [build_item(v, t, p, c) for v, t, p, c in cards]
+        total_page = parse_pagecount(page)
+        await OmniBox.log("info", "[search] %s p%d -> %d 条 / 共 %d 页" % (key, page_no, len(items), total_page))
+        return {"page": page_no, "pagecount": total_page, "total": parse_total(page), "list": items}
+    except Exception as exc:
+        await OmniBox.log("error", "[search] 失败: %s" % exc)
+        return {"page": page_no, "pagecount": 0, "total": 0, "list": []}
+
+
+async def play(params, context):
+    play_id = (params.get("playId") or "").strip()
+    flag = params.get("flag") or "play"
+    if not play_id:
+        raise ValueError("playId 不能为空")
+    host = await ensure_host()
+    url = abs_url(host, play_id)
+    direct = bool(re.search(r"\.(m3u8|mp4|flv)(\?|$)", url, re.I))
+    return {
+        "urls": [{"name": "播放", "url": url}],
+        "flag": flag,
+        "header": {"User-Agent": UA, "Referer": host + "/", "Origin": host},
+        "parse": 0 if direct else 1,
+    }
+
+
+if __name__ == "__main__":
     run({
-        'home': home,
-        'category': category,
-        'detail': detail,
-        'search': search,
-        'play': play,
+        "home": home,
+        "category": category,
+        "detail": detail,
+        "search": search,
+        "play": play,
     })
