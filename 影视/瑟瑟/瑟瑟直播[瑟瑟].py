@@ -1,21 +1,46 @@
 # -*- coding: utf-8 -*-
 # @name Leospring直播
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/瑟瑟直播[瑟瑟].py
-# @version 1.0.0
+# @version 1.0.1
 
 import json
 from spider_runner import OmniBox, run
 
-host = "http://api.maiyoux.com:81/mf/"
+HOSTS = [
+    "http://api.maiyoux.com:81/mf/",
+    "http://api.vipmisss.com:81/xcdsw/" 
+    "http://api.hclyz.com:81/mf/"  # 继续往这里追加备用地址
+]
+host = HOSTS[0]
 cateList = {}
+
+try:
+    import requests
+except Exception:
+    requests = None
+
+
+def get_active_host():
+    """按顺序尝试主机，返回可用地址"""
+    if not requests:
+        return host
+    for base in HOSTS:
+        try:
+            requests.get(base + "json.txt", timeout=5)
+            return base
+        except Exception:
+            continue
+    return HOSTS[0]
+
 
 # 初始化加载分类
 try:
-    import requests
-    resp = requests.get(host + "json.txt", timeout=10)
-    resp.encoding = "utf-8"
-    cateList = json.loads(resp.text)
-except:
+    if requests:
+        host = get_active_host()
+        resp = requests.get(host + "json.txt", timeout=10)
+        resp.encoding = "utf-8"
+        cateList = json.loads(resp.text)
+except Exception:
     cateList = {}
 
 async def home(params, context):
@@ -66,7 +91,8 @@ async def detail(params, context):
         return {"list": []}
 
     try:
-        resp = requests.get(host + video_id, timeout=10)
+        current_host = get_active_host()
+        resp = requests.get(current_host + video_id, timeout=10)
         resp.encoding = "utf-8"
         data = json.loads(resp.text)
         zhubo = data.get("zhubo", [])
@@ -121,12 +147,13 @@ async def play(params, context):
     if not play_id:
         raise ValueError("playId 不能为空")
 
+    active_host = get_active_host()
     return {
         "urls": [{"name": "播放", "url": play_id}],
         "flag": "play",
         "header": {
             "User-Agent": "Mozilla/5.0",
-            "Referer": host
+            "Referer": active_host
         },
         "parse": 0
     }
