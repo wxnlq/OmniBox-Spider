@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # @name AV3698
-# @version 1.0.1
+# @version 1.0.2
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/AV3698[瑟瑟].py
 
 import re
@@ -165,6 +165,14 @@ async def detail(params, context):
             stream = m2.group(0)
     if not stream:
         return {'list': []}
+    stream = urllib.parse.urljoin(host + '/', stream)
+    stream_parts = urllib.parse.urlsplit(stream)
+    if stream_parts.path.rstrip('/').endswith('/proxy-m3u8'):
+        upstream = urllib.parse.parse_qs(stream_parts.query).get('url', [''])[0]
+        upstream_parts = urllib.parse.urlsplit(upstream)
+        if upstream_parts.scheme not in ('http', 'https') or not upstream_parts.netloc:
+            raise ValueError('AV3698 的 proxy-m3u8 地址未包含有效的上游 M3U8 URL')
+        stream = upstream
 
     return {'list': [{
         'vod_id': video_id,
