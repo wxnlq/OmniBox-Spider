@@ -1,36 +1,83 @@
 # -*- coding: utf-8 -*-
 # @name 桃花坞
 # @downloadURL https://raw.githubusercontent.com/wxnlq/OmniBox-Spider/refs/heads/main/影视/瑟瑟/桃花坞[瑟瑟].py
-# @version 1.0.0
+# @version 1.0.1
 # @dependencies urllib.request,urllib.parse,json,re
 # @description 桃花坞(thw1034.lol) OmniBox 爬虫源：首页 / 分类 / 详情 / 搜索 / 播放。MacCMS 结构，封面明文直连。
 
-import gzip
+import base64
+import html as html_lib
 import json
+import os
 import re
-import ssl
-import urllib.parse
-import urllib.request
+from urllib.parse import quote, unquote, urljoin
 
-from spider_runner import OmniBox, run
+try:
+    # OmniBox 正式环境：SDK 由 spider_runner 提供
+    from spider_runner import OmniBox, run
+except ImportError:  # pragma: no cover - 仅供本地调试
+    # 本地没有 spider_runner 时的最小 fallback：用 urllib 实现 request/log，
+    # run() 从 stdin 读一个 JSON 请求 {"method", "params", "context"} 并分发。
+    import asyncio
+    import sys
+    import urllib.request
 
-# ====================== 站点配置 ======================
-# 主域名 + 备用域名（站点换域名时把新的加进来即可，脚本会自动挑一个能通的）
-HOSTS = [
-    "https://thw1034.lol",
-    "https://www.taohuawu147.lol",
-    "https://taohuawu147.lol",
-]
+    class _LocalOmniBox:
+        @staticmethod
+        async def request(url, options=None):
+            options = options or {}
+            req = urllib.request.Request(
+                url,
+                method=options.get("method") or "GET",
+                headers=options.get("headers") or {},
+                data=(options.get("body").encode("utf-8")
+                      if options.get("body") else None),
+            )
+            loop = asyncio.get_running_loop()
 
-UA = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-)
+            def _fetch():
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    raw = resp.read()
+                    charset = resp.headers.get_content_charset() or "utf-8"
+                    return {"statusCode": resp.status,
+                            "headers": dict(resp.headers),
+                            "body": raw.decode(charset, errors="ignore")}
 
-TIMEOUT = 15
+            return await loop.run_in_executor(None, _fetch)
 
-# 分类（站点导航实测 12 个）
-CLASSES = [
+        @staticmethod
+        async def log(level, message):
+            print(f"[{level}] {message}", file=sys.stderr)
+
+    OmniBox = _LocalOmniBox()
+
+    def run(handlers):
+        payload = json.loads(sys.stdin.read() or "{}")
+        handler = handlers.get(payload.get("method") or "")
+        if handler is None:
+            print(json.dumps({"error": "unknown method"}, ensure_ascii=False))
+            return
+        result = asyncio.run(
+            handler(payload.get("params") or {}, payload.get("context") or {}))
+        print(json.dumps(result, ensure_ascii=False))
+
+
+# ---------------------------------------------------------------------------
+# 配置
+# ---------------------------------------------------------------------------
+
+BASE_URL = os.environ.get("THW_BASE_URL", "https://thw1034.lol").rstrip("/")
+
+HEADERS = {
+    "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                   "AppleWebKit/537.36 (KHTML, like Gecko) "
+                   "Chrome/126.0.0.0 Safari/537.36"),
+    "Referer": BASE_URL + "/",
+    "Accept-Language": "zh-CN,zh;q=0.9",
+}
+
+# 分类 id -> 分类名（以分类页实测 <h1> 为准）
+CATEGORIES = [
     {"type_id": "1", "type_name": "国产精品"},
     {"type_id": "2", "type_name": "华语AV"},
     {"type_id": "3", "type_name": "黑料吃瓜"},
@@ -44,456 +91,547 @@ CLASSES = [
     {"type_id": "11", "type_name": "主播网红"},
     {"type_id": "12", "type_name": "日本素人"},
 ]
+CATEGORY_NAMES = {c["type_id"]: c["type_name"] for c in CATEGORIES}
 
-_host = None
+PAGE_SIZE = 16  # 分类/搜索页实测每页 16 条
 
-
-# ====================== 基础请求 ======================
-def _ssl_ctx():
-    try:
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        return ctx
-    except Exception:
-        return None
-
-
-def http_get(url, referer=None):
-    """标准库取页面，自动处理 gzip 与编码。"""
-    headers = {
-        "User-Agent": UA,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "zh-CN,zh;q=0.9",
-        "Connection": "close",
-    }
-    if referer:
-        headers["Referer"] = referer
-    req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req, timeout=TIMEOUT, context=_ssl_ctx()) as resp:
-        raw = resp.read()
-        if (resp.headers.get("Content-Encoding") or "").lower() == "gzip":
-            try:
-                raw = gzip.decompress(raw)
-            except Exception:
-                pass
-    for enc in ("utf-8", "gb18030"):
-        try:
-            return raw.decode(enc)
-        except Exception:
-            continue
-    return raw.decode("utf-8", "ignore")
+# 排序筛选（对应 /vod/show/by/{sort}/id/...，time 为默认排序，走 type 路由即可）
+SORT_FILTER = {
+    "key": "sort",
+    "name": "排序",
+    "init": "time",
+    "value": [
+        {"name": "最近更新", "value": "time"},
+        {"name": "最高人气", "value": "hits"},
+        {"name": "最多点赞", "value": "up"},
+    ],
+}
 
 
-def to_int(v, default=0):
-    try:
-        return int(str(v).strip())
-    except Exception:
-        return default
+# ---------------------------------------------------------------------------
+# 正则
+# ---------------------------------------------------------------------------
+
+# 播放链接：/index.php/vod/play/id/149605/sid/1/nid/1.html
+PLAY_HREF_RE = re.compile(
+    r"/index\.php/vod/play/id/(\d+)/sid/(\d+)/nid/(\d+)\.html")
+IMG_TAG_RE = re.compile(r"<img\b[^>]*>", re.S)
+TITLE_TAG_RE = re.compile(r"<title>([^<]+)</title>", re.S)
+H6_TITLE_RE = re.compile(r"<h6[^>]*>\s*<a[^>]*>([^<]+)</a>", re.S)
+CATEGORY_LINK_RE = re.compile(
+    r'<a[^>]+href="[^"]*/index\.php/vod/type/id/(\d+)\.html"[^>]*>([^<]+)</a>',
+    re.S)
+DATE_RE = re.compile(r"(20\d{2}-\d{1,2}-\d{1,2})")
+SHORT_DATE_RE = re.compile(r"\d{1,2}-\d{1,2}")
+TAG_LINK_RE = re.compile(r"/index\.php/vod/search/wd/([^\"'<>]+)\.html")
+PLAYER_AAAA_RE = re.compile(
+    r"player_aaaa\s*=\s*(\{.*\})\s*(?:;|</script>)", re.S)
+# 实测（2026-11-17，id 149605）：页面写的是 player_aaaa={...}</script>，
+# 无 var、无分号，且 url 为 https:\/\/thm3u8.co\/...\/index.m3u8（encrypt=0）。
+# 上面的惰性正则会停在 vod_data 子对象的第一个 } 处导致 JSON 解析失败，
+# 因此 _player_aaaa_urls() 改用花括号配对扫描，不再依赖该正则的分组。
+IFRAME_SRC_RE = re.compile(
+    r'<iframe\b[^>]+src=["\']([^"\']+)["\']', re.S | re.I)
+M3U8_RE = re.compile(
+    r"https?://[^\"'\s<>\\]+\.m3u8(?:\?[^\"'\s<>\\]*)?", re.I)
+MP4_RE = re.compile(
+    r"https?://[^\"'\s<>\\]+\.mp4(?:\?[^\"'\s<>\\]*)?", re.I)
+OG_IMAGE_RE = re.compile(
+    r'<meta\b[^>]+property=["\']og:image["\'][^>]*content=["\']([^"\']+)["\']',
+    re.S | re.I)
+OG_IMAGE_RE2 = re.compile(
+    r'<meta\b[^>]+content=["\']([^"\']+)["\'][^>]*property=["\']og:image["\']',
+    re.S | re.I)
 
 
-async def ensure_host():
-    """挑一个当前能通的域名，整个进程内缓存。"""
-    global _host
-    if _host:
-        return _host
-    for h in HOSTS:
-        try:
-            html = http_get(h + "/")
-            if "vod/play/id/" in html or "vod/type/id/" in html:
-                _host = h
-                await OmniBox.log("info", "站点可用: %s" % h)
-                return h
-        except Exception as e:
-            await OmniBox.log("warn", "站点不可用 %s: %s" % (h, e))
-            continue
-    _host = HOSTS[0]
-    return _host
+# ---------------------------------------------------------------------------
+# 通用工具
+# ---------------------------------------------------------------------------
 
-
-def abs_url(h, u):
-    u = (u or "").strip()
-    if not u:
+def _clean(text):
+    """去 HTML 标签/实体/多余空白。"""
+    if not text:
         return ""
-    if u.startswith("//"):
-        return "https:" + u
-    if u.startswith("http"):
-        return u
-    if u.startswith("/"):
-        return h + u
-    return h + "/" + u.lstrip("./")
+    text = re.sub(r"<[^>]+>", "", text)
+    text = html_lib.unescape(text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
-def unescape(s):
-    """站里标题/属性常带 HTML 实体。"""
-    if not s:
+def _abs_url(url):
+    if not url:
         return ""
-    s = (
-        s.replace("&quot;", '"')
-        .replace("&#39;", "'")
-        .replace("&apos;", "'")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&nbsp;", " ")
-        .replace("&amp;", "&")
-    )
-    return re.sub(r"\s+", " ", s).strip()
+    url = html_lib.unescape(url.strip()).replace("\\/", "/")
+    if url.startswith("data:") or url.startswith("javascript:"):
+        return ""
+    if url.startswith("//"):
+        return "https:" + url
+    return urljoin(BASE_URL + "/", url)
 
 
-# ====================== 列表解析 ======================
-# 卡片：<a href="/index.php/vod/play/id/148083/sid/1/nid/1.html"> <img class="lazyload" src=占位 data-src=真实图 alt=标题>
-_CARD_RE = re.compile(
-    r'<a[^>]*href="(/index\.php/vod/play/id/(\d+)/sid/(\d+)/nid/(\d+)\.html)"[^>]*>(.*?)</a>',
-    re.S,
-)
+def _is_placeholder_pic(url):
+    """过滤懒加载占位图/透明 gif。"""
+    if not url or url.startswith("data:"):
+        return True
+    low = url.lower()
+    return ("placeholder" in low or "loading" in low
+            or low.endswith(".gif") and "blank" in low)
 
 
-def _attr(tag, name):
-    m = re.search(name + r'\s*=\s*"([^"]*)"', tag or "")
-    if not m:
-        m = re.search(name + r"\s*=\s*'([^']*)'", tag or "")
-    return unescape(m.group(1)) if m else ""
+def _img_pic(img_tag):
+    """按懒加载属性优先级取图片地址：data-original > data-src > src。"""
+    for attr in ("data-original", "data-src", "data-lazy-src",
+                 "data-url", "src"):
+        m = re.search(r'%s=["\']([^"\']+)["\']' % attr, img_tag)
+        if m:
+            url = _abs_url(m.group(1))
+            if url and not _is_placeholder_pic(url):
+                return url
+    return ""
 
 
-def parse_cards(html):
-    """列表卡片 → [{vod_id, path, title, pic, remarks}]，按 id 去重。"""
-    rows = []
+def _img_alt(img_tag):
+    m = re.search(r'alt=["\']([^"\']*)["\']', img_tag)
+    return _clean(m.group(1)) if m else ""
+
+
+async def _fetch(url):
+    """GET 取页面 HTML，失败返回空串并记日志。"""
+    try:
+        resp = await OmniBox.request(url, {"method": "GET", "headers": HEADERS})
+        if (resp or {}).get("statusCode") != 200:
+            await OmniBox.log(
+                "warn", "请求失败 %s status=%s"
+                % (url, (resp or {}).get("statusCode")))
+            return ""
+        return (resp or {}).get("body") or ""
+    except Exception as exc:  # noqa: BLE001 - 爬虫要容错，记日志后返回空
+        await OmniBox.log("warn", "请求异常 %s: %s" % (url, exc))
+        return ""
+
+
+def _last_page(html_text, pattern):
+    """从分页栏的“最后 »”链接取总页数；找不到返回 None。"""
+    pages = [int(n) for n in re.findall(pattern, html_text or "")]
+    return max(pages) if pages else None
+
+
+# ---------------------------------------------------------------------------
+# 列表解析（首页 / 分类 / 搜索共用同一卡片结构）
+# ---------------------------------------------------------------------------
+
+def parse_vod_list(html_text, default_type_id="", default_type_name=""):
+    """解析视频卡片列表。
+
+    卡片结构（实测）：外层 <a href="播放页"> 内含 <img src 封面 alt 标题>、
+    日期（MM-DD）和 HD 徽标；其后 <h6><a>标题</a></h6>。
+    """
+    items = []
     seen = set()
-    for m in _CARD_RE.finditer(html or ""):
-        path, vid, sid, nid, inner = m.groups()
-        if vid in seen:
+    text = html_text or ""
+    matches = list(PLAY_HREF_RE.finditer(text))
+    for idx, m in enumerate(matches):
+        vod_id, sid, nid = m.group(1), m.group(2), m.group(3)
+        if vod_id in seen:
             continue
-        title, pic = "", ""
-        img = re.search(r"<img[^>]*>", inner or "")
-        if img:
-            tag = img.group(0)
-            title = _attr(tag, "alt")
-            pic = _attr(tag, "data-src") or _attr(tag, "data-original") or _attr(tag, "src")
-            if not pic or "placeholder" in pic or pic.startswith("data:"):
-                pic = _attr(tag, "data-src") or _attr(tag, "data-original")
+        seen.add(vod_id)
+        # 卡片内容在 href 之后、下个卡片之前，窗口截到下个播放链接处
+        end = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
+        window = text[m.start():min(end, m.start() + 3000)]
+
+        title = ""
+        pic = ""
+        img_m = IMG_TAG_RE.search(window)
+        if img_m:
+            pic = _img_pic(img_m.group(0))
+            title = _img_alt(img_m.group(0))
         if not title:
-            t = re.search(r"<h\d[^>]*>(.*?)</h\d>", inner or "", re.S)
-            if t:
-                title = unescape(re.sub(r"<[^>]+>", "", t.group(1)))
-        if not title or not pic:
-            # 广告位/空卡片/导航位：没有标题或没有图的都不算作品
-            if not title:
-                continue
-        label = re.search(r'<span class="label">([^<]*)</span>', inner or "")
-        seen.add(vid)
-        rows.append(
-            {
-                "vod_id": vid,
-                "sid": sid,
-                "nid": nid,
-                "path": path,
-                "vod_name": title,
-                "vod_pic": abs_url(_host or HOSTS[0], pic),
-                "vod_remarks": unescape(label.group(1)) if label else "",
-            }
-        )
-    return rows
+            h6_m = H6_TITLE_RE.search(window)
+            if h6_m:
+                title = _clean(h6_m.group(1))
+        # 标题里可能带日期后缀（如 "xxx 11-17"），去掉
+        title = re.sub(r"\s*\d{1,2}-\d{1,2}\s*$", "", title).strip()
+        if not title:
+            continue
+
+        remarks = "HD" if "HD" in window else ""
+        item = {
+            "vod_id": vod_id,
+            "vod_name": title,
+            "vod_pic": pic,
+            "vod_remarks": remarks,
+        }
+        if default_type_id:
+            item["type_id"] = default_type_id
+        if default_type_name:
+            item["type_name"] = default_type_name
+        # 日期只作副标题展示（MM-DD，无年份）
+        date_m = SHORT_DATE_RE.search(window)
+        if date_m:
+            item["vod_subtitle"] = date_m.group(0)
+        items.append(item)
+    return items
 
 
-def build_item(row, type_id="", type_name=""):
-    return {
-        "vod_id": row["vod_id"],
-        "vod_name": row["vod_name"],
-        "vod_pic": row["vod_pic"],
-        "type_id": type_id,
-        "type_name": type_name,
-        "vod_remarks": row.get("vod_remarks") or "HD",
-        "vod_year": "",
-        "vod_douban_score": "",
-    }
+# ---------------------------------------------------------------------------
+# 播放地址解析
+# ---------------------------------------------------------------------------
+
+def _decode_player_url(url, encrypt):
+    """解码 player_aaaa.url：encrypt 0=明文，1=escape 编码，2=base64。"""
+    if not url:
+        return ""
+    url = url.strip()
+    try:
+        if encrypt in (1, "1"):
+            return unquote(url)
+        if encrypt in (2, "2"):
+            padded = url + "=" * (-len(url) % 4)
+            return base64.b64decode(padded).decode("utf-8", errors="ignore")
+    except Exception:  # noqa: BLE001 - 解码失败则回落明文
+        pass
+    return url
 
 
-def max_page(html):
-    """
-    分页总数。两种写法都兼容：
-      分类 /index.php/vod/type/id/2/page/395.html
-      搜索 /index.php/vod/search/page/20/wd/xxx.html
-    """
-    pages = [to_int(x) for x in re.findall(r"/page/(\d+)(?:/|\.html)", html or "")]
-    pages = [p for p in pages if p > 0]
-    return max(pages) if pages else 1
-
-
-# ====================== 首页 ======================
-def parse_home(html, h):
-    """首页是若干板块（国产传媒/日本无码/…），逐个板块解析后合并去重。"""
-    marks = list(re.finditer(r"<h2[^>]*>\s*([^<]{1,30}?)\s*</h2>", html or ""))
-    rows = []
+def _extract_stream_urls(html_text):
+    """从 HTML 里直搜流媒体地址，返回去重后的 [(name, url)]。"""
+    found = []
     seen = set()
-    for i, m in enumerate(marks):
-        name = unescape(m.group(1))
-        end = marks[i + 1].start() if i + 1 < len(marks) else len(html)
-        seg = html[m.end():end]
-        for row in parse_cards(seg):
-            if row["vod_id"] in seen:
-                continue
-            seen.add(row["vod_id"])
-            row["type_name"] = name
-            rows.append(row)
-    if not rows:  # 结构变化时兜底：整页抓
-        rows = parse_cards(html)
-    return rows
+    # 先把 JSON 里常见的 \/ 转义还原，否则 https:\/\/... 匹配不到
+    text = (html_text or "").replace("\\/", "/")
+    for pattern in (M3U8_RE, MP4_RE):
+        for raw in pattern.findall(text):
+            url = _abs_url(raw)
+            if url and url not in seen:
+                seen.add(url)
+                found.append(url)
+    return found
 
+
+def _player_aaaa_json(html_text):
+    """按花括号配对取 player_aaaa = {...} 的完整 JSON 文本。
+
+    兼容 var player_aaaa = {...}; 与 player_aaaa={...}</script> 两种写法；
+    扫描时跳过字符串内的花括号/转义字符，避免停在 vod_data 子对象处。
+    """
+    text = html_text or ""
+    m = re.search(r"player_aaaa\s*=\s*\{", text)
+    if not m:
+        return ""
+    start = m.end() - 1
+    depth = 0
+    in_str = False
+    escaped = False
+    for i in range(start, len(text)):
+        ch = text[i]
+        if in_str:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_str = False
+        else:
+            if ch == '"':
+                in_str = True
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    return text[start:i + 1]
+    return ""
+
+
+def _player_aaaa_urls(html_text):
+    """解析 MacCMS 标准变量 var player_aaaa = {...}，返回 (直链, iframe链接)。"""
+    direct = []
+    iframe_links = []
+    raw_json = _player_aaaa_json(html_text)
+    if not raw_json:
+        return direct, iframe_links
+    try:
+        data = json.loads(raw_json)
+    except ValueError:
+        return direct, iframe_links
+    encrypt = data.get("encrypt", 0)
+    for key in ("url", "url_next"):
+        url = _decode_player_url(str(data.get(key) or ""), encrypt)
+        if url:
+            url = _abs_url(url)
+            # url 字段偶尔是多地址以 $$$ 或 # 分隔，逐个拆开
+            for part in re.split(r"[\$#]+", url):
+                part = part.strip()
+                if part.startswith("http") and part not in direct:
+                    direct.append(part)
+    for key in ("link", "link_next"):
+        link = str(data.get(key) or "").strip()
+        if link and link.startswith("http"):
+            iframe_links.append(_abs_url(link))
+    return direct, iframe_links
+
+
+async def _resolve_play_urls(play_page_html):
+    """分层提取播放地址，返回 [(name, url)]（可能为空）。"""
+    urls = []
+
+    # 1) player_aaaa 直链
+    direct, iframe_links = _player_aaaa_urls(play_page_html)
+    urls.extend(direct)
+
+    # 2) 页面内直搜 m3u8 / mp4
+    for url in _extract_stream_urls(play_page_html):
+        if url not in urls:
+            urls.append(url)
+    if urls:
+        return [("播放", u) for u in urls]
+
+    # 3) 跟进 iframe（播放器内页），最多跟 2 个
+    iframe_srcs = []
+    for src in IFRAME_SRC_RE.findall(play_page_html or ""):
+        abs_src = _abs_url(src)
+        if abs_src and abs_src not in iframe_srcs:
+            iframe_srcs.append(abs_src)
+    for link in iframe_links:
+        if link not in iframe_srcs:
+            iframe_srcs.append(link)
+    for src in iframe_srcs[:2]:
+        inner = await _fetch(src)
+        if not inner:
+            continue
+        direct2, _ = _player_aaaa_urls(inner)
+        urls.extend(u for u in direct2 if u not in urls)
+        for url in _extract_stream_urls(inner):
+            if url not in urls:
+                urls.append(url)
+        if urls:
+            break
+
+    return [("播放", u) for u in urls]
+
+
+# ---------------------------------------------------------------------------
+# OmniBox handlers
+# ---------------------------------------------------------------------------
 
 async def home(params, context):
-    h = await ensure_host()
-    try:
-        html = http_get(h + "/", h + "/")
-        rows = parse_home(html, h)
-        items = [build_item(r, "", r.get("type_name", "")) for r in rows]
-        await OmniBox.log("info", "[home] %d 条" % len(items))
-        return {"class": CLASSES, "list": items}
-    except Exception as e:
-        await OmniBox.log("error", "[home] 失败: %s" % e)
-        return {"class": CLASSES, "list": []}
-
-
-# ====================== 分类 ======================
-def category_url(h, tid, page):
-    """
-    实测规则：
-      /index.php/vod/type/id/2.html           第 1 页
-      /index.php/vod/type/id/2/page/2.html    第 N 页
-    """
-    tid = re.sub(r"[^\d]", "", str(tid or "")) or "1"
-    if page <= 1:
-        return "%s/index.php/vod/type/id/%s.html" % (h, tid)
-    return "%s/index.php/vod/type/id/%s/page/%d.html" % (h, tid, page)
+    """首页：分类 + 推荐列表（首页 5 个栏目、各 8 条，共约 40 条）。"""
+    await OmniBox.log("info", "桃花坞 home：获取首页数据")
+    html_text = await _fetch(BASE_URL + "/")
+    items = parse_vod_list(html_text)
+    result = {
+        "class": CATEGORIES,
+        "list": items,
+        "filters": {c["type_id"]: [SORT_FILTER] for c in CATEGORIES},
+    }
+    if items:
+        result["banner"] = [
+            {
+                "title": it.get("vod_name", ""),
+                "subtitle": it.get("vod_remarks", ""),
+                "backgroundImage": it.get("vod_pic", ""),
+                "genre": it.get("type_name", ""),
+                "actors": "",
+                "description": "",
+            }
+            for it in items[:5]
+        ]
+    return result
 
 
 async def category(params, context):
-    tid = params.get("categoryId") or params.get("tid") or "1"
-    page = to_int(params.get("page"), 1) or 1
-    h = await ensure_host()
-    tid_digits = re.sub(r"[^\d]", "", str(tid)) or "1"
-    type_name = next((c["type_name"] for c in CLASSES if c["type_id"] == tid_digits), "")
-    try:
-        html = http_get(category_url(h, tid_digits, page), h + "/")
-        rows = parse_cards(html)
-        items = [build_item(r, tid_digits, type_name) for r in rows]
-        pagecount = max(max_page(html), page)
-        await OmniBox.log("info", "[category] tid=%s p%s -> %d 条 / 共 %s 页" % (tid_digits, page, len(items), pagecount))
-        return {
-            "page": page,
-            "pagecount": pagecount,
-            "total": pagecount * max(len(items), 1),
-            "list": items,
-        }
-    except Exception as e:
-        await OmniBox.log("error", "[category] 失败: %s" % e)
-        return {"page": page, "pagecount": 1, "total": 0, "list": []}
+    """分类列表。params: categoryId, page, filters{sort}。"""
+    category_id = str(params.get("categoryId") or "1")
+    page = int(params.get("page") or 1)
+    filters = params.get("filters") or {}
+    sort = (filters.get("sort") or "time").strip()
+    type_name = CATEGORY_NAMES.get(category_id, "")
 
+    if sort in ("hits", "up"):
+        # 排序页：/index.php/vod/show/by/{sort}/id/{id}.html
+        base = "%s/index.php/vod/show/by/%s/id/%s" % (BASE_URL, sort, category_id)
+        page_pattern = (r"/vod/show/by/%s/id/%s/page/(\d+)\.html"
+                        % (re.escape(sort), re.escape(category_id)))
+    else:
+        base = "%s/index.php/vod/type/id/%s" % (BASE_URL, category_id)
+        page_pattern = (r"/vod/type/id/%s/page/(\d+)\.html"
+                        % re.escape(category_id))
+    url = base + (".html" if page <= 1 else "/page/%d.html" % page)
 
-# ====================== 详情 ======================
-def find_pic(html, vid):
-    """详情页本身不显示封面，先从页面里的卡片找同 id 的那张。"""
-    for row in parse_cards(html):
-        if row["vod_id"] == str(vid) and row["vod_pic"]:
-            return row["vod_pic"]
-    return ""
-
-
-def search_pic(h, title, vid):
-    """再兜底：拿标题搜一次，命中的第一条就是它。"""
-    if not title:
-        return ""
-    try:
-        q = urllib.parse.quote(title[:24])
-        html = http_get("%s/index.php/vod/search.html?wd=%s" % (h, q), h + "/")
-        for row in parse_cards(html):
-            if row["vod_id"] == str(vid) and row["vod_pic"]:
-                return row["vod_pic"]
-    except Exception:
-        pass
-    return ""
+    await OmniBox.log("info", "桃花坞 category：%s page=%d" % (url, page))
+    html_text = await _fetch(url)
+    items = parse_vod_list(html_text, category_id, type_name)
+    pagecount = _last_page(html_text, page_pattern) or page
+    return {
+        "page": page,
+        "pagecount": pagecount,
+        # 站内无总条数字段，用“总页数 x 每页16条”估算（末页可能不足 16 条）
+        "total": pagecount * PAGE_SIZE,
+        "list": items,
+    }
 
 
 async def detail(params, context):
-    raw = str(params.get("videoId") or params.get("vod_id") or "").strip()
-    if not raw:
+    """视频详情。
+
+    详情页全站空白，改为抓播放页取标题/分类/日期/标签。
+    videoId 为数字 id（如 149605），也兼容 "id|sid|nid" 与完整播放链接。
+    """
+    raw_id = str(params.get("videoId") or "").strip()
+    m = re.search(r"(\d+)", raw_id)
+    if not m:
         return {"list": []}
-    vid, sid, nid = raw, "1", "1"
-    m = re.search(r"/id/(\d+)/sid/(\d+)/nid/(\d+)", raw)
-    if m:
-        vid, sid, nid = m.group(1), m.group(2), m.group(3)
-    elif not raw.isdigit():
-        d = re.search(r"(\d+)", raw)
-        vid = d.group(1) if d else raw
+    video_id = m.group(1)
+    sid_m = re.search(r"\|(\d+)\|(\d+)", raw_id)
+    sid = sid_m.group(1) if sid_m else "1"
+    nid = sid_m.group(2) if sid_m else "1"
 
-    h = await ensure_host()
-    url = "%s/index.php/vod/play/id/%s/sid/%s/nid/%s.html" % (h, vid, sid, nid)
-    try:
-        html = http_get(url, h + "/")
+    play_url = ("%s/index.php/vod/play/id/%s/sid/%s/nid/%s.html"
+                % (BASE_URL, video_id, sid, nid))
+    await OmniBox.log("info", "桃花坞 detail：%s" % play_url)
+    html_text = await _fetch(play_url)
+    if not html_text:
+        return {"list": []}
 
-        # 标题
-        title = ""
-        for pat in (
-            r'<h1[^>]*class="[^"]*title[^"]*"[^>]*>(.*?)</h1>',
-            r"<h1[^>]*>(.*?)</h1>",
-        ):
-            t = re.search(pat, html, re.S)
-            if t:
-                title = unescape(re.sub(r"<[^>]+>", "", t.group(1)))
-                if title:
-                    break
-        if not title:
-            t = re.search(r"<title>(.*?)</title>", html, re.S)
-            title = unescape(re.sub(r"<[^>]+>", "", t.group(1))) if t else ("视频 %s" % vid)
-            title = re.sub(r"\s*第\d+集\s*$", "", title).strip()
+    name = ""
+    title_m = TITLE_TAG_RE.search(html_text)
+    if title_m:
+        name = _clean(title_m.group(1))
+        name = re.sub(r"\s*-\s*Niceav\s*$", "", name)
+        name = re.sub(r"\s*第\d+集\s*$", "", name).strip()
 
-        # 日期 / 年份
-        year = ""
-        d = re.search(r"<span[^>]*>\s*(\d{4})-\d{2}-\d{2}\s*</span>", html)
-        if d:
-            year = d.group(1)
+    type_id, type_name = "", ""
+    cat_m = CATEGORY_LINK_RE.search(html_text)
+    if cat_m:
+        type_id, type_name = cat_m.group(1), _clean(cat_m.group(2))
 
-        # 封面
-        pic = find_pic(html, vid) or search_pic(h, title, vid)
+    pic = ""
+    og_m = OG_IMAGE_RE.search(html_text) or OG_IMAGE_RE2.search(html_text)
+    if og_m:
+        pic = _abs_url(og_m.group(1))
+    if not pic:
+        img_m = IMG_TAG_RE.search(html_text)
+        if img_m:
+            pic = _img_pic(img_m.group(0))
 
-        # 剧集：同 id 的所有 sid/nid 组合（该站基本单片，多集自动识别）
-        combos = []
-        for s, n in re.findall(
-            r"/index\.php/vod/play/id/%s/sid/(\d+)/nid/(\d+)\.html" % re.escape(str(vid)), html
-        ):
-            key = (s, n)
-            if key not in combos:
-                combos.append(key)
-        if not combos:
-            combos = [(sid, nid)]
+    date_m = DATE_RE.search(html_text)
+    tags = []
+    for raw_tag in TAG_LINK_RE.findall(html_text):
+        tag = _clean(unquote(raw_tag))
+        if tag and tag not in tags:
+            tags.append(tag)
+    content_parts = []
+    if date_m:
+        content_parts.append("发布日期：%s" % date_m.group(1))
+    if tags:
+        content_parts.append("标签：%s" % "、".join(tags[:12]))
+
+    # 播放源：站内为单线路单集；若播放页含同 id 的其他 sid/nid 链接则一并收录
+    sources = {}
+    for pm in PLAY_HREF_RE.finditer(html_text):
+        if pm.group(1) != video_id:
+            continue
+        s, n = pm.group(2), pm.group(3)
+        sources.setdefault(s, set()).add(n)
+    if not sources:
+        sources = {sid: {nid}}
+    play_sources = []
+    for s in sorted(sources, key=lambda x: int(x)):
         episodes = [
-            {"name": "正片" if len(combos) == 1 else "第%d集" % (i + 1), "playId": "%s|%s|%s" % (vid, s, n)}
-            for i, (s, n) in enumerate(combos)
+            {"name": "第%s集" % n,
+             "playId": "%s|%s|%s" % (video_id, s, n)}
+            for n in sorted(sources[s], key=lambda x: int(x))
         ]
+        play_sources.append({"name": "线路%s" % s, "episodes": episodes})
 
-        content = "桃花坞 · %s" % title
-        if year:
-            content = "桃花坞 · %s · %s" % (year, title)
-        if len(episodes) > 1:
-            content += " · 共 %d 集" % len(episodes)
-
-        await OmniBox.log("info", "[detail] %s 封面=%s 集数=%d" % (vid, bool(pic), len(episodes)))
-        return {
-            "list": [
-                {
-                    "vod_id": str(vid),
-                    "vod_name": title,
-                    "vod_pic": pic,
-                    "vod_content": content,
-                    "vod_year": year,
-                    "vod_remarks": "HD" if len(episodes) == 1 else "全%d集" % len(episodes),
-                    "vod_actor": "",
-                    "vod_director": "",
-                    "vod_area": "",
-                    "vod_play_sources": [{"name": "桃花坞", "episodes": episodes}],
-                }
-            ]
-        }
-    except Exception as e:
-        await OmniBox.log("error", "[detail] %s 失败: %s" % (vid, e))
-        return {"list": []}
+    item = {
+        "vod_id": video_id,
+        "vod_name": name or raw_id,
+        "vod_pic": pic,
+        "vod_content": "\n".join(content_parts),
+        "vod_remarks": "HD",
+        "type_id": type_id,
+        "type_name": type_name or CATEGORY_NAMES.get(type_id, ""),
+        "vod_play_sources": play_sources,
+    }
+    if date_m:
+        item["vod_year"] = date_m.group(1)[:4]
+    return {"list": [item]}
 
 
-# ====================== 搜索 ======================
 async def search(params, context):
-    key = unescape(str(params.get("keyword") or params.get("wd") or "")).strip()
-    page = to_int(params.get("page"), 1) or 1
-    if not key:
+    """搜索。params: keyword, page。"""
+    keyword = (params.get("keyword") or params.get("wd") or "").strip()
+    page = int(params.get("page") or 1)
+    if not keyword:
         return {"page": 1, "pagecount": 0, "total": 0, "list": []}
-    h = await ensure_host()
-    q = urllib.parse.quote(key)
-    try:
-        # 实测分页规则：/index.php/vod/search/page/1/wd/<关键词>.html
-        url = "%s/index.php/vod/search/page/%d/wd/%s.html" % (h, page, q)
-        html = http_get(url, h + "/")
-        rows = parse_cards(html)
-        items = [build_item(r) for r in rows]
-        pagecount = max(max_page(html), page)
-        await OmniBox.log("info", "[search] %s p%s -> %d 条 / 共 %s 页" % (key, page, len(items), pagecount))
-        return {
-            "page": page,
-            "pagecount": pagecount,
-            "total": pagecount * max(len(items), 1),
-            "list": items,
-        }
-    except Exception as e:
-        await OmniBox.log("error", "[search] %s 失败: %s" % (key, e))
-        return {"page": page, "pagecount": 0, "total": 0, "list": []}
 
+    encoded = quote(keyword)
+    if page <= 1:
+        url = "%s/index.php/vod/search/wd/%s.html" % (BASE_URL, encoded)
+    else:
+        url = ("%s/index.php/vod/search/page/%d/wd/%s.html"
+               % (BASE_URL, page, encoded))
 
-# ====================== 播放 ======================
-def parse_player(html):
-    """页面里 var player_aaaa={...} 带真实播放地址。"""
-    m = re.search(r"player_aaaa\s*=\s*(\{.*?\})\s*</script>", html or "", re.S)
-    if not m:
-        m = re.search(r"player_aaaa\s*=\s*(\{.*?\});", html or "", re.S)
-    if not m:
-        return {}
-    try:
-        return json.loads(m.group(1))
-    except Exception:
-        try:
-            return json.loads(unescape(m.group(1)))
-        except Exception:
-            return {}
+    await OmniBox.log("info", "桃花坞 search：%s" % url)
+    html_text = await _fetch(url)
+    items = parse_vod_list(html_text)
+    pagecount = _last_page(html_text, r"/vod/search/page/(\d+)/wd/") or page
+    return {
+        "page": page,
+        "pagecount": pagecount,
+        "total": pagecount * PAGE_SIZE,
+        "list": items,
+    }
 
 
 async def play(params, context):
-    pid = str(params.get("playId") or params.get("videoId") or "").strip()
+    """获取播放地址。
+
+    playId 格式："{vod_id}|{sid}|{nid}"，也兼容纯数字 id 与完整播放链接。
+    """
+    raw_id = str(params.get("playId") or "").strip()
     flag = params.get("flag") or "play"
-    if not pid:
+    if not raw_id:
         raise ValueError("playId 不能为空")
 
-    vid, sid, nid = pid, "1", "1"
-    m = re.match(r"^(\d+)\|(\d+)\|(\d+)$", pid)
-    if m:
-        vid, sid, nid = m.groups()
-    else:
-        m2 = re.search(r"/id/(\d+)/sid/(\d+)/nid/(\d+)", pid)
-        if m2:
-            vid, sid, nid = m2.groups()
+    m = re.search(r"(\d+)", raw_id)
+    if not m:
+        raise ValueError("playId 无法解析：%s" % raw_id)
+    video_id = m.group(1)
+    sid_m = re.search(r"\|(\d+)\|(\d+)", raw_id)
+    sid = sid_m.group(1) if sid_m else "1"
+    nid = sid_m.group(2) if sid_m else "1"
+    play_url = ("%s/index.php/vod/play/id/%s/sid/%s/nid/%s.html"
+                % (BASE_URL, video_id, sid, nid))
 
-    h = await ensure_host()
-    page_url = "%s/index.php/vod/play/id/%s/sid/%s/nid/%s.html" % (h, vid, sid, nid)
-    header = {"User-Agent": UA, "Referer": h + "/", "Origin": h}
-
-    try:
-        html = http_get(page_url, h + "/")
-        info = parse_player(html)
-        url = abs_url(h, str(info.get("url") or ""))
-        if url:
-            direct = bool(re.search(r"\.(m3u8|mp4|flv)(\?|$)", url, re.I))
-            await OmniBox.log("info", "[play] %s -> %s" % (vid, url[:90]))
+    await OmniBox.log("info", "桃花坞 play：%s" % play_url)
+    html_text = await _fetch(play_url)
+    header = dict(HEADERS)
+    if html_text:
+        resolved = await _resolve_play_urls(html_text)
+        if resolved:
             return {
-                "urls": [{"name": "播放", "url": url}],
-                "flag": info.get("flag") or flag,
+                "urls": [{"name": name, "url": url} for name, url in resolved],
+                "flag": flag,
                 "header": header,
-                "parse": 0 if direct else 1,
+                "parse": 0,  # 直链不需解析
             }
-    except Exception as e:
-        await OmniBox.log("error", "[play] %s 失败: %s" % (vid, e))
 
-    # 解析不到直链就交回客户端自己嗅探（ok影视 支持 parse=1）
+    # 兜底：未提取到直链时返回播放页，交由客户端嗅探（仅 ok影视 app 有效）
+    await OmniBox.log("warn", "桃花坞 play：未提取到直链，回落嗅探 %s" % play_url)
     return {
-        "urls": [{"name": "播放", "url": page_url}],
+        "urls": [{"name": "播放", "url": play_url}],
         "flag": flag,
         "header": header,
         "parse": 1,
     }
 
 
-# ====================== 启动 ======================
 if __name__ == "__main__":
-    run(
-        {
-            "home": home,
-            "category": category,
-            "detail": detail,
-            "search": search,
-            "play": play,
-        }
-    )
+    run({
+        "home": home,
+        "category": category,
+        "detail": detail,
+        "search": search,
+        "play": play,
+    })
